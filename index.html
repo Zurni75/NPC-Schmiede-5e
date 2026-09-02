@@ -1,0 +1,245 @@
+<!DOCTYPE html>
+<html lang="de">
+<head>
+<meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>NPC-Schmiede v0.3</title>
+<style>
+:root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
+*{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
+.wrap{max-width:1100px;margin:auto}header{display:flex;justify-content:space-between;gap:15px;align-items:flex-start;margin-bottom:20px}h1,h2,h3{font-family:Georgia,serif}h1{margin:0;font-size:42px}.subtitle{color:var(--muted)}.badge{border:1px solid var(--line);border-radius:999px;padding:7px 10px;color:var(--muted)}
+.card{background:rgba(24,29,37,.96);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:18px;box-shadow:0 16px 45px rgba(0,0,0,.23)}
+.formgrid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}label{display:block;font-weight:700;margin-bottom:7px}input,select,button,textarea{width:100%;border-radius:12px;padding:13px 14px;font-size:16px}
+input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(--text)}textarea{min-height:110px;resize:vertical;font-family:inherit}button{border:none;background:var(--accent);font-weight:800;cursor:pointer}button.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
+.buttons{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-top:12px}.api{margin-top:12px;border-left:4px solid var(--accent);padding:12px;background:#151a21;border-radius:10px;color:#d8d3c9;font-size:13px}
+.result{display:none}.hero{display:grid;grid-template-columns:220px 1fr;gap:18px}.portrait{aspect-ratio:4/5;border-radius:16px;border:1px dashed #667184;background:radial-gradient(circle at 35% 25%,#536070,#252b36 62%,#141821);display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;color:#c7c3ba}
+.name{font-size:36px;margin:0 0 5px}.meta{color:var(--muted)}.smallstats{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.pill{background:#10151c;border:1px solid var(--line);border-radius:999px;padding:8px 11px}.pill strong{color:var(--good)}
+.stats{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.stat{background:#10151c;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}.stat b{display:block;color:var(--muted);font-size:12px}.stat span{font-size:23px;font-weight:800}
+.sections{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:18px}.section{background:#131922;border:1px solid var(--line);border-radius:14px;padding:14px;line-height:1.5}.section h3{margin:0 0 8px;color:#efd492}.full{grid-column:1/-1}.kv{display:grid;grid-template-columns:130px 1fr;gap:5px 12px}.kv div:nth-child(odd){color:var(--muted);font-weight:700}.saved{display:none;color:var(--good);margin-top:10px}
+.searchbox{display:grid;grid-template-columns:2fr 1fr;gap:10px}
+.npclist{display:grid;gap:10px;margin-top:12px}
+.npcrow{background:#11161d;border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
+.npcrow small{color:var(--muted);display:block;margin-top:3px}.npcrow button{width:auto;padding:9px 12px}
+@media(max-width:850px){.formgrid{grid-template-columns:1fr 1fr}.hero{grid-template-columns:1fr}.portrait{max-width:260px}}@media(max-width:620px){.formgrid,.buttons,.sections,.searchbox{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}
+.portrait img{width:100%;height:100%;object-fit:cover;border-radius:14px}#playerImage img{max-width:100vw;max-height:100vh;object-fit:contain}</style>
+</head>
+<body><div class="wrap">
+<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Fantasy NPC Generator – KI-ready Prototyp</div></div><div class="badge">v0.3</div></header>
+
+<div class="card">
+<div class="formgrid">
+<div><label>1–3 Stichworte</label><input id="keywords" value="alte Zwergin, Schmiedin, mürrisch"></div>
+<div><label>Level</label><select id="level"><option value="random">Zufällig</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option></select></div>
+<div><label>NPC-Typ</label><select id="role"><option>Normaler NPC</option><option>Wichtiger NPC</option><option>Gegner</option></select></div>
+<div><label>Geschlecht</label><select id="gender"><option>Zufällig</option><option>Weiblich</option><option>Männlich</option><option>Divers</option></select></div>
+</div>
+<div class="buttons"><button onclick="generateNPC()">✨ NPC generieren</button><button class="secondary" onclick="randomPrompt()">🎲 Stichworte</button><button class="secondary" onclick="clearAll()">Leeren</button></div>
+<div class="api"><b>KI-Anbindung vorbereitet:</b> Später ersetzt ein Server-Endpunkt wie <code>/api/generate-npc</code> die lokale Demo-Generierung. Der API-Key liegt dann sicher auf dem Server und nicht in der App.</div>
+</div>
+
+<div class="card">
+  <h2 style="margin-top:0">Meine NSC</h2>
+  <div class="searchbox">
+    <input id="npcSearch" placeholder="Suche nach Name, Ort, Beruf, Volk, Notiz oder bekanntem NSC ..." oninput="renderSavedNPCs()">
+    <button class="secondary" onclick="renderSavedNPCs()">🔎 Suchen</button>
+  </div>
+  <div id="npcList" class="npclist"></div>
+  <div class="note">Gespeicherte NSC bleiben in diesem Prototyp lokal in diesem Browser gespeichert.</div>
+</div>
+
+<div id="result" class="card result">
+<div class="hero">
+<div class="portrait" id="portraitBox" onclick="openPlayerView()" style="cursor:pointer">Noch kein Portrait.<br><br><b>Antippen für Spieleransicht</b></div>
+<div><h2 class="name" id="name"></h2><div class="meta" id="meta"></div>
+<div class="smallstats"><div class="pill">RK <strong id="ac"></strong></div><div class="pill">TP <strong id="hp"></strong></div><div class="pill">ÜB <strong id="pb"></strong></div><div class="pill">Initiative <strong id="init"></strong></div></div>
+<div id="stats" class="stats"></div></div>
+</div>
+
+<div class="sections">
+<div class="section"><h3>Erscheinung</h3><div id="appearance"></div><div style="margin-top:10px"><b>Kleidung:</b> <span id="clothing"></span></div></div>
+<div class="section"><h3>Persönlichkeit</h3><div id="personality"></div></div>
+<div class="section"><h3>Motivation</h3><div id="motivation"></div></div>
+<div class="section"><h3>Eigenart</h3><div id="quirk"></div></div>
+<div class="section"><h3>Ideal / Bindung / Makel</h3><div id="ibf" class="kv"></div></div>
+<div class="section"><h3>Geheimnis</h3><div id="secret"></div></div>
+<div class="section"><h3>Skills</h3><div id="skills"></div></div>
+<div class="section"><h3>Sprechweise</h3><div id="speech"></div></div>
+<div class="section full"><h3>Angriffe & Fähigkeiten</h3><div id="combat"></div></div>
+</div>
+
+<div class="section full" style="margin-top:12px"><h3>SL-Notizen & Beziehungen</h3>
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+<div><label>Eingesetzt / Ort / Situation</label><input id="usedWhere" placeholder="z. B. Taverne, Everlund – Sitzung 12"></div>
+<div><label>Bekannt mit NSC</label><input id="knownNPCs" placeholder="z. B. Hauptmann Arvik; Mira Feldhain"></div>
+</div>
+<div style="margin-top:12px"><label>Freie SL-Notizen</label><textarea id="gmNotes" placeholder="Begegnungen mit der Gruppe, Versprechen, offene Aufgaben, Änderungen am Charakter ..."></textarea></div>
+<div class="note">Diese Angaben sind reine SL-Informationen und erscheinen niemals in der Spieleransicht.</div></div><div class="buttons"><button class="secondary" onclick="saveNPC()">☆ NPC speichern</button><button class="secondary" onclick="generateNPC()">↻ Neu generieren</button><button class="secondary" onclick="generateImage()">🎨 Portrait generieren</button></div>
+<div id="saved" class="saved">✓ NPC lokal für diesen Prototyp gespeichert.</div><div id="imageStatus" class="note" style="margin-top:10px"></div>
+</div>
+</div>
+
+<script>
+const D={
+names:{zwerg:["Bromira Eisenhand","Dagna Kupferbart","Hilda Runenfaust","Brunna Erzgriff","Thorin Graufels","Marn Eisenkessel"],elf:["Lyriana Valeth","Serelis Vaelor","Aelwyn Farnblatt","Nerys Mondhain","Caelion Silberblatt","Mireth Morgenhain"],ork:["Grakka Eisenkinn","Rukha Aschfaust","Morga Rotzahn","Korga Schwarzfaust","Brakka Steinbrecher","Urga Graumond"],mensch:["Mira Feldhain","Talia Brenn","Sera Dorn","Harlan Voss","Edric Falk","Corvin Heller"],default:["Ravel Dorn","Sera Nachtwind","Corvin Falk","Mira Dornhain","Tarek Voss","Lysa Krähenfeder"]},
+appearance:["Ein wettergegerbtes Gesicht, kräftige Hände und Kleidung mit deutlichen Spuren jahrelanger Arbeit.","Auffällig helle Augen, ein schiefes Lächeln und eine alte Narbe direkt unter dem rechten Ohr.","Wirkt ungewöhnlich gepflegt; jedes Kleidungsstück sitzt ordentlich, obwohl die Ausrüstung sichtbar oft benutzt wurde.","Bewegt sich kontrolliert und fast lautlos. An einer Hand fehlt die Spitze des kleinen Fingers.","Das Haar ist streng zurückgebunden, die Stiefel mehrfach repariert und dennoch tadellos gepflegt.","Trägt eine alte Fibel, die nicht zum Rest der Kleidung passt und offensichtlich großen persönlichen Wert besitzt."],
+personality:["Wortkarg, trocken und schnell gereizt. Verlässlichkeit zeigt sich eher durch Taten als durch Worte.","Offen, herzlich und aufmerksam. Merkt sich erstaunlich viele kleine Details.","Höflich und kontrolliert, prüft aber jeden neuen Kontakt sehr genau.","Neugierig bis zur Aufdringlichkeit und stets hungrig nach Gerüchten.","Pragmatisch, ungeduldig und lösungsorientiert.","Wirkt kühl und distanziert, besitzt jedoch einen ausgeprägten Gerechtigkeitssinn."],
+motivation:["Will genug Geld verdienen, um eine alte Schuld endgültig zu begleichen.","Sucht nach einer verschwundenen Person, spricht darüber aber nur ungern.","Möchte den eigenen Ruf wiederherstellen.","Will die Familie schützen und hält deshalb wichtige Informationen zurück.","Will beweisen, dass ein lange belächelter Verdacht stimmt.","Sucht Sicherheit und will nie wieder von jemand anderem abhängig sein."],
+quirk:["Klopft vor wichtigen Aussagen zweimal mit dem Finger auf den Tisch.","Spricht Namen anderer Menschen ungewöhnlich häufig aus.","Räumt Gegenstände automatisch gerade, wenn sie schief liegen.","Zählt beim Nachdenken leise unter dem Atem.","Lächelt immer dann, wenn die Situation eigentlich unangenehm wird.","Prüft beim Betreten eines Raumes zuerst Fenster und Türen."],
+secret:["Hat vor Jahren unter einem anderen Namen gelebt.","Versteckt einen Schlüssel zu einem Ort, von dem offiziell niemand wissen dürfte.","Hat heimlich Kontakt zu einer verfeindeten Fraktion.","Schuldet einer einflussreichen Person einen gefährlich großen Gefallen.","War Zeuge eines Verbrechens und schweigt aus Angst.","Verdächtigt jemanden aus dem eigenen Umfeld des Verrats."],
+speech:["Spricht knapp, direkt und verwendet möglichst wenige Worte.","Redet ruhig und langsam, als würde jeder Satz vorher geprüft.","Hat einen trockenen Humor und formuliert Beleidigungen auffallend höflich.","Spricht schnell und verschluckt Wörter, sobald Nervosität aufkommt.","Verwendet viele alte Redewendungen und Vergleiche aus dem eigenen Handwerk.","Spricht freundlich, selbst wenn der Inhalt eigentlich eine Drohung ist."],
+ideals:["Loyalität","Freiheit","Wissen","Gerechtigkeit","Selbstbestimmung","Tradition"],bonds:["Familie","ein alter Freund","die Heimatstadt","ein verlorener Mentor","eine Schuld","ein Versprechen"],flaws:["zu stolz","misstrauisch","leicht reizbar","gierig","übervorsichtig","unfähig, Fehler einzugestehen"],clothing:["Trägt robuste Arbeitskleidung aus dunklem Leinen und Leder, mit vielen kleinen Taschen und sichtbaren Reparaturstellen.","Ein langer, sauberer Mantel über schlichter Kleidung; alles wirkt zweckmäßig, aber ungewöhnlich gepflegt.","Schwere Lederstiefel, wetterfeste Hose und eine verstärkte Weste, die deutlich auf ein praktisches Leben ausgelegt sind.","Feinere Kleidung als erwartet: bestickte Säume, hochwertige Stoffe und ein einzelnes auffälliges Schmuckstück.","Eine abgewetzte Reisekleidung mit Kapuze, mehreren Gürteln und kleinen Beuteln für Werkzeug oder persönliche Dinge.","Schlichte, unauffällige Kleidung in gedeckten Farben, ideal um in einer Menge nicht aufzufallen.","Arbeitskittel, dicke Schürze und hitzebeständige Handschuhe; alles riecht leicht nach Rauch, Öl und Metall.","Lockere, bewegungsfreundliche Kleidung mit weichem Leder, schmalen Stiefeln und kaum dekorativen Elementen."]
+};
+const skillSets=[["Wahrnehmung","Menschenkenntnis","Athletik","Handwerk"],["Täuschung","Überreden","Heimlichkeit","Wahrnehmung"],["Nachforschungen","Geschichte","Arkane Kunde","Menschenkenntnis"],["Überleben","Tierführung","Wahrnehmung","Naturkunde"],["Akrobatik","Heimlichkeit","Fingerfertigkeit","Wahrnehmung"]];
+function pick(a){return a[Math.floor(Math.random()*a.length)]} function fmt(n){return(n>=0?"+":"")+n} function mod(v){return Math.floor((v-10)/2)}
+function generateNPC(){
+let k=document.getElementById("keywords").value.toLowerCase(), role=document.getElementById("role").value, gender=document.getElementById("gender").value, lv=document.getElementById("level").value;
+let level=lv==="random"?1+Math.floor(Math.random()*12):parseInt(lv), pb=2+Math.floor((level-1)/4), race="Mensch",key="default";
+if(k.includes("zwerg")){race="Zwerg";key="zwerg"} else if(k.includes("elf")){race="Elf";key="elf"} else if(k.includes("ork")){race="Halbork";key="ork"} else if(k.includes("mensch")){key="mensch"}
+let job=k.includes("schmied")?"Schmied":k.includes("spion")?"Spion":k.includes("wirt")?"Wirt":k.includes("jäger")?"Jäger":k.includes("händler")?"Händler":"Abenteurer";
+let vals=[8,10,11,12,13,14,15,16,17,18].sort(()=>Math.random()-.5).slice(0,6), dex=vals[1],con=vals[2];
+let age=race==="Zwerg"?70+Math.floor(Math.random()*200):race==="Elf"?80+Math.floor(Math.random()*400):20+Math.floor(Math.random()*55);
+if(k.includes("alt")) age=Math.max(age,race==="Elf"?220:race==="Zwerg"?150:55); if(k.includes("jung")) age=Math.min(age,race==="Elf"?130:race==="Zwerg"?80:28);
+let appearance=pick(D.appearance), personality=pick(D.personality); if(k.includes("alt")) appearance="Vom Alter sichtbar gezeichnet, aber noch präsent. "+appearance;
+if(k.includes("mürr")) personality="Mürrisch, wortkarg und schnell genervt. "+pick(["Trotzdem zuverlässig, wenn es ernst wird.","Mit etwas Geduld zeigt sich trockener Humor.","Zuneigung zeigt sich fast nur durch Taten."]);
+if(k.includes("freund")) personality="Freundlich, aufmerksam und zugänglich. "+pick(["Hilft gern, erwartet aber Ehrlichkeit.","Kann selbst Fremden schnell ein Gefühl von Vertrautheit geben.","Merkt sich viele kleine persönliche Details."]);
+let ac=10+Math.max(0,mod(dex))+Math.floor(level/6)+(role==="Gegner"?2:0), hp=Math.max(6,8+level*(4+Math.max(0,mod(con)))+(role==="Gegner"?level*3:0));
+document.getElementById("name").textContent=pick(D.names[key]); document.getElementById("meta").textContent=`${race} · ${job} · Level ${level} · ${age} Jahre · ${gender}`;
+document.getElementById("ac").textContent=ac;document.getElementById("hp").textContent=hp;document.getElementById("pb").textContent="+"+pb;document.getElementById("init").textContent=fmt(mod(dex));
+let labs=["STÄ","GES","KON","INT","WEI","CHA"];document.getElementById("stats").innerHTML=labs.map((x,i)=>`<div class="stat"><b>${x}</b><span>${vals[i]}</span><div>${fmt(mod(vals[i]))}</div></div>`).join("");
+appearance=appearance;document.getElementById("appearance").textContent=appearance;document.getElementById("clothing").textContent=pick(D.clothing);document.getElementById("personality").textContent=personality;
+document.getElementById("motivation").textContent=pick(D.motivation);document.getElementById("quirk").textContent=pick(D.quirk);document.getElementById("secret").textContent=pick(D.secret);document.getElementById("speech").textContent=pick(D.speech);
+document.getElementById("ibf").innerHTML=`<div>Ideal</div><div>${pick(D.ideals)}</div><div>Bindung</div><div>${pick(D.bonds)}</div><div>Makel</div><div>${pick(D.flaws)}</div>`;
+let ss=pick(skillSets);document.getElementById("skills").innerHTML=ss.map((s,i)=>`${s} ${fmt(pb+Math.max(0,mod(vals[(i+1)%6])))}`).join("<br>");
+let strMod=mod(vals[0]), dexMod=mod(vals[1]);
+let finesse=Math.max(strMod,dexMod);
+
+function weaponStats(weapon){
+  let dmgDie="1W8", dmgMod=strMod, atkMod=strMod, range="Nahkampf";
+  if(weapon==="Streitaxt"||weapon==="Kriegshammer"||weapon==="Langschwert"){dmgDie="1W8";dmgMod=strMod;atkMod=strMod;}
+  if(weapon==="Kurzschwert"){dmgDie="1W6";dmgMod=finesse;atkMod=finesse;}
+  if(weapon==="Speer"){dmgDie="1W6";dmgMod=strMod;atkMod=strMod;range="Nahkampf / Wurf";}
+  if(weapon==="Dolch"){dmgDie="1W4";dmgMod=finesse;atkMod=finesse;range="Nahkampf / Wurf";}
+  if(weapon==="Langbogen"){dmgDie="1W8";dmgMod=dexMod;atkMod=dexMod;range="Fernkampf";}
+  if(weapon==="Armbrust"){dmgDie="1W8";dmgMod=dexMod;atkMod=dexMod;range="Fernkampf";}
+  return {weapon,dmgDie,dmgMod,atkMod,range,atk:fmt(pb+atkMod),dmgBonus:fmt(dmgMod)};
+}
+
+const meleePool=["Langschwert","Streitaxt","Kriegshammer","Kurzschwert","Speer","Dolch"];
+const rangedPool=["Langbogen","Armbrust","Speer","Dolch"];
+let primary=weaponStats(pick(meleePool));
+let secondary=weaponStats(pick(rangedPool.filter(w=>w!==primary.weapon)));
+
+let attacks=1;
+if(level>=5) attacks=2;
+if(level>=11 && role==="Gegner") attacks=3;
+if(level>=17 && role==="Gegner") attacks=4;
+
+let special=role==="Gegner"
+ ? pick(["Einmal pro Runde 1W6 zusätzlicher Schaden.","Als Bonusaktion halbe Bewegung ohne Gelegenheitsangriffe.","Einmal pro kurze Rast Vorteil auf Angriffe.","Unter halben TP kurzzeitig +2 RK."])
+ : pick(["Vorteil auf passende Berufsproben.","Kann lokale Gerüchte und Kontakte beschaffen.","Erkennt Unstimmigkeiten im eigenen Fachgebiet.","Kann über Kontakte einfache Hilfe organisieren."]);
+
+document.getElementById("combat").innerHTML=
+`<b>Angriffe pro Runde:</b> ${attacks}<br><br>
+ <b>Hauptwaffe – ${primary.weapon}</b> <span style="color:#aaa">(${primary.range})</span><br>
+ Trefferbonus: ${primary.atk}<br>
+ Schaden: ${primary.dmgDie} ${primary.dmgBonus} Schaden pro Treffer<br><br>
+ <b>Zweitwaffe – ${secondary.weapon}</b> <span style="color:#aaa">(${secondary.range})</span><br>
+ Trefferbonus: ${secondary.atk}<br>
+ Schaden: ${secondary.dmgDie} ${secondary.dmgBonus} Schaden pro Treffer<br><br>
+ <b>Besondere Fähigkeit:</b> ${special}`;
+document.getElementById("result").style.display="block";document.getElementById("saved").style.display="none";document.getElementById("result").scrollIntoView({behavior:"smooth"});
+}
+function randomPrompt(){document.getElementById("keywords").value=pick(["alte Zwergin, Schmiedin, mürrisch","junger Elf, Spion, nervös","Halbork, Wirt, freundlich","Mensch, Priester, geheimnisvoll","Elfin, Jägerin, arrogant","Zwerg, Händler, misstrauisch"])}
+function clearAll(){document.getElementById("keywords").value="";document.getElementById("result").style.display="none"}
+function getSavedNPCs(){
+  try{return JSON.parse(localStorage.getItem("npcSchmiedeNPCs")||"[]")}catch(e){return[]}
+}
+function saveNPC(){
+  const stats=[...document.querySelectorAll("#stats .stat")].map(x=>x.innerText.replace(/\n/g," "));
+  const npc={
+    id:Date.now(),
+    name:document.getElementById("name").textContent,
+    meta:document.getElementById("meta").textContent,
+    ac:document.getElementById("ac").textContent,
+    hp:document.getElementById("hp").textContent,
+    pb:document.getElementById("pb").textContent,
+    init:document.getElementById("init").textContent,
+    stats:stats,
+    appearance:document.getElementById("appearance").textContent,
+    clothing:document.getElementById("clothing").textContent,
+    personality:document.getElementById("personality").textContent,
+    motivation:document.getElementById("motivation").textContent,
+    quirk:document.getElementById("quirk").textContent,
+    ibf:document.getElementById("ibf").innerText,
+    secret:document.getElementById("secret").textContent,
+    skills:document.getElementById("skills").innerText,
+    speech:document.getElementById("speech").textContent,
+    combat:document.getElementById("combat").innerText,
+    usedWhere:document.getElementById("usedWhere").value,
+    knownNPCs:document.getElementById("knownNPCs").value,
+    gmNotes:document.getElementById("gmNotes").value
+  };
+  const list=getSavedNPCs(); list.unshift(npc);
+  localStorage.setItem("npcSchmiedeNPCs",JSON.stringify(list));
+  document.getElementById("saved").style.display="block";
+  renderSavedNPCs();
+}
+function renderSavedNPCs(){
+  const q=(document.getElementById("npcSearch")?.value||"").toLowerCase().trim();
+  const list=getSavedNPCs().filter(n=>JSON.stringify(n).toLowerCase().includes(q));
+  const box=document.getElementById("npcList");
+  if(!box)return;
+  if(!list.length){box.innerHTML='<div class="note">Keine passenden gespeicherten NSC gefunden.</div>';return;}
+  box.innerHTML=list.map(n=>`<div class="npcrow">
+    <div><b>${n.name}</b><small>${n.meta}</small><small>${n.usedWhere ? "Eingesetzt: "+n.usedWhere : "Noch kein Einsatzort eingetragen"}</small></div>
+    <button class="secondary" onclick="loadNPC(${n.id})">Öffnen</button>
+  </div>`).join("");
+}
+function loadNPC(id){
+  const n=getSavedNPCs().find(x=>x.id===id); if(!n)return;
+  document.getElementById("name").textContent=n.name; document.getElementById("meta").textContent=n.meta;
+  document.getElementById("ac").textContent=n.ac; document.getElementById("hp").textContent=n.hp;
+  document.getElementById("pb").textContent=n.pb; document.getElementById("init").textContent=n.init;
+  const labs=["STÄ","GES","KON","INT","WEI","CHA"];
+  document.getElementById("stats").innerHTML=(n.stats||[]).map((v,i)=>`<div class="stat"><b>${labs[i]||""}</b><span>${v.split(" ")[1]||""}</span><div>${v.split(" ").slice(2).join(" ")}</div></div>`).join("");
+  document.getElementById("appearance").textContent=n.appearance||""; document.getElementById("clothing").textContent=n.clothing||"";
+  document.getElementById("personality").textContent=n.personality||""; document.getElementById("motivation").textContent=n.motivation||"";
+  document.getElementById("quirk").textContent=n.quirk||""; document.getElementById("ibf").innerText=n.ibf||"";
+  document.getElementById("secret").textContent=n.secret||""; document.getElementById("skills").innerText=n.skills||"";
+  document.getElementById("speech").textContent=n.speech||""; document.getElementById("combat").innerText=n.combat||"";
+  document.getElementById("usedWhere").value=n.usedWhere||""; document.getElementById("knownNPCs").value=n.knownNPCs||"";
+  document.getElementById("gmNotes").value=n.gmNotes||"";
+  document.getElementById("result").style.display="block";
+  document.getElementById("result").scrollIntoView({behavior:"smooth"});
+}
+function openPlayerView(){document.getElementById("playerView").style.display="flex"}
+function closePlayerView(){document.getElementById("playerView").style.display="none"}
+async function generateImage(){
+  const status=document.getElementById("imageStatus");
+  status.textContent="Portrait wird erzeugt …";
+  const payload={
+    name:document.getElementById("name").textContent,
+    meta:document.getElementById("meta").textContent,
+    appearance:document.getElementById("appearance").textContent,
+    clothing:document.getElementById("clothing").textContent,
+    personality:document.getElementById("personality").textContent
+  };
+  try{
+    const res=await fetch('/api/generate-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
+    const data=await res.json();
+    if(!res.ok) throw new Error(data.error||'Bildgenerierung fehlgeschlagen');
+    document.getElementById("portraitBox").innerHTML=`<img src="${data.image}" alt="NSC Portrait">`;
+    document.getElementById("playerImage").innerHTML=`<img src="${data.image}" alt="Spieleransicht">`;
+    status.textContent="✓ Portrait erzeugt. Antippen zeigt nur das Bild.";
+  }catch(err){status.textContent="Fehler: "+err.message;}
+}
+generateNPC();renderSavedNPCs();
+</script>
+
+<div id="playerView" onclick="closePlayerView()" style="
+display:none;position:fixed;inset:0;background:#000;z-index:9999;
+align-items:center;justify-content:center;padding:0;cursor:pointer">
+  <div id="playerImage" style="width:100vw;height:100vh;display:flex;align-items:center;justify-content:center;background:#000;color:#eee;text-align:center;font-size:22px;padding:0">
+    <div id="playerPlaceholder">Noch kein Portrait vorhanden.<br><br><span style="font-size:14px;color:#aaa">Antippen zum Schließen</span></div>
+  </div>
+</div>
+</body></html>
