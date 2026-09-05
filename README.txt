@@ -1,18 +1,11 @@
-NPC-SCHMIEDE v0.4 – VERCEL
+NPC-Schmiede v0.41
 
-1. Projekt zu GitHub hochladen.
-2. Repository in Vercel importieren.
-3. Vercel > Projekt > Settings > Environment Variables.
-4. Neue Variable:
-   Name: OPENAI_API_KEY
-   Value: deinen OpenAI API-Key einfügen
-5. Speichern.
-6. Danach Deployments > Redeploy.
-7. Vercel-Webadresse öffnen.
-8. NPC erzeugen und auf „Portrait generieren“ klicken.
+Neu:
+- Kreative NPC-Texte werden über /api/generate-npc mit GPT-5.6 Luna erzeugt.
+- Eigenart, Geheimnis und Sprechweise werden gegen die letzten 12 lokal erzeugten NPCs auf Wiederholungen geprüft.
+- Regelwerte, Angriffe und Schaden werden weiterhin lokal berechnet.
+- Portraitgenerierung bleibt separat und erfolgt nur per Klick.
+- Kein automatischer API-Aufruf beim Laden der Seite.
 
-WICHTIG:
-- API-Key NICHT in index.html oder generate-image.js eintragen.
-- API-Key NICHT hier im Chat teilen.
-- Die NPC-Texte werden in v0.4 weiterhin lokal erzeugt.
-- Nur die Portrait-Funktion verwendet bereits OpenAI GPT-Image-2.
+Vercel:
+OPENAI_API_KEY muss als Environment Variable gesetzt sein.

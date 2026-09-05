@@ -2,7 +2,7 @@
 <html lang="de">
 <head>
 <meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
-<title>NPC-Schmiede v0.3</title>
+<title>NPC-Schmiede v0.41</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -23,7 +23,7 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 .portrait img{width:100%;height:100%;object-fit:cover;border-radius:14px}#playerImage img{max-width:100vw;max-height:100vh;object-fit:contain}</style>
 </head>
 <body><div class="wrap">
-<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Fantasy NPC Generator – KI-ready Prototyp</div></div><div class="badge">v0.3</div></header>
+<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Fantasy NPC Generator – KI-Charaktere + 5e-Werte</div></div><div class="badge">v0.41</div></header>
 
 <div class="card">
 <div class="formgrid">
@@ -33,7 +33,7 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 <div><label>Geschlecht</label><select id="gender"><option>Zufällig</option><option>Weiblich</option><option>Männlich</option><option>Divers</option></select></div>
 </div>
 <div class="buttons"><button onclick="generateNPC()">✨ NPC generieren</button><button class="secondary" onclick="randomPrompt()">🎲 Stichworte</button><button class="secondary" onclick="clearAll()">Leeren</button></div>
-<div class="api"><b>KI-Anbindung vorbereitet:</b> Später ersetzt ein Server-Endpunkt wie <code>/api/generate-npc</code> die lokale Demo-Generierung. Der API-Key liegt dann sicher auf dem Server und nicht in der App.</div>
+<div class="api"><b>KI aktiv:</b> Kreative Charaktertexte werden über GPT-5.6 Luna erzeugt. Regelwerte und Kampfwerte berechnet die App lokal. Portraits werden weiterhin nur auf Knopfdruck erzeugt.</div><div id="npcStatus" class="note" style="margin-top:10px"></div>
 </div>
 
 <div class="card">
@@ -90,63 +90,92 @@ ideals:["Loyalität","Freiheit","Wissen","Gerechtigkeit","Selbstbestimmung","Tra
 };
 const skillSets=[["Wahrnehmung","Menschenkenntnis","Athletik","Handwerk"],["Täuschung","Überreden","Heimlichkeit","Wahrnehmung"],["Nachforschungen","Geschichte","Arkane Kunde","Menschenkenntnis"],["Überleben","Tierführung","Wahrnehmung","Naturkunde"],["Akrobatik","Heimlichkeit","Fingerfertigkeit","Wahrnehmung"]];
 function pick(a){return a[Math.floor(Math.random()*a.length)]} function fmt(n){return(n>=0?"+":"")+n} function mod(v){return Math.floor((v-10)/2)}
-function generateNPC(){
-let k=document.getElementById("keywords").value.toLowerCase(), role=document.getElementById("role").value, gender=document.getElementById("gender").value, lv=document.getElementById("level").value;
-let level=lv==="random"?1+Math.floor(Math.random()*12):parseInt(lv), pb=2+Math.floor((level-1)/4), race="Mensch",key="default";
-if(k.includes("zwerg")){race="Zwerg";key="zwerg"} else if(k.includes("elf")){race="Elf";key="elf"} else if(k.includes("ork")){race="Halbork";key="ork"} else if(k.includes("mensch")){key="mensch"}
-let job=k.includes("schmied")?"Schmied":k.includes("spion")?"Spion":k.includes("wirt")?"Wirt":k.includes("jäger")?"Jäger":k.includes("händler")?"Händler":"Abenteurer";
-let vals=[8,10,11,12,13,14,15,16,17,18].sort(()=>Math.random()-.5).slice(0,6), dex=vals[1],con=vals[2];
-let age=race==="Zwerg"?70+Math.floor(Math.random()*200):race==="Elf"?80+Math.floor(Math.random()*400):20+Math.floor(Math.random()*55);
-if(k.includes("alt")) age=Math.max(age,race==="Elf"?220:race==="Zwerg"?150:55); if(k.includes("jung")) age=Math.min(age,race==="Elf"?130:race==="Zwerg"?80:28);
-let appearance=pick(D.appearance), personality=pick(D.personality); if(k.includes("alt")) appearance="Vom Alter sichtbar gezeichnet, aber noch präsent. "+appearance;
-if(k.includes("mürr")) personality="Mürrisch, wortkarg und schnell genervt. "+pick(["Trotzdem zuverlässig, wenn es ernst wird.","Mit etwas Geduld zeigt sich trockener Humor.","Zuneigung zeigt sich fast nur durch Taten."]);
-if(k.includes("freund")) personality="Freundlich, aufmerksam und zugänglich. "+pick(["Hilft gern, erwartet aber Ehrlichkeit.","Kann selbst Fremden schnell ein Gefühl von Vertrautheit geben.","Merkt sich viele kleine persönliche Details."]);
-let ac=10+Math.max(0,mod(dex))+Math.floor(level/6)+(role==="Gegner"?2:0), hp=Math.max(6,8+level*(4+Math.max(0,mod(con)))+(role==="Gegner"?level*3:0));
-document.getElementById("name").textContent=pick(D.names[key]); document.getElementById("meta").textContent=`${race} · ${job} · Level ${level} · ${age} Jahre · ${gender}`;
-document.getElementById("ac").textContent=ac;document.getElementById("hp").textContent=hp;document.getElementById("pb").textContent="+"+pb;document.getElementById("init").textContent=fmt(mod(dex));
-let labs=["STÄ","GES","KON","INT","WEI","CHA"];document.getElementById("stats").innerHTML=labs.map((x,i)=>`<div class="stat"><b>${x}</b><span>${vals[i]}</span><div>${fmt(mod(vals[i]))}</div></div>`).join("");
-appearance=appearance;document.getElementById("appearance").textContent=appearance;document.getElementById("clothing").textContent=pick(D.clothing);document.getElementById("personality").textContent=personality;
-document.getElementById("motivation").textContent=pick(D.motivation);document.getElementById("quirk").textContent=pick(D.quirk);document.getElementById("secret").textContent=pick(D.secret);document.getElementById("speech").textContent=pick(D.speech);
-document.getElementById("ibf").innerHTML=`<div>Ideal</div><div>${pick(D.ideals)}</div><div>Bindung</div><div>${pick(D.bonds)}</div><div>Makel</div><div>${pick(D.flaws)}</div>`;
-let ss=pick(skillSets);document.getElementById("skills").innerHTML=ss.map((s,i)=>`${s} ${fmt(pb+Math.max(0,mod(vals[(i+1)%6])))}`).join("<br>");
-let strMod=mod(vals[0]), dexMod=mod(vals[1]);
-let finesse=Math.max(strMod,dexMod);
-
-function weaponStats(weapon){
-  let dmgDie="1W8", dmgMod=strMod, atkMod=strMod, range="Nahkampf";
-  if(weapon==="Streitaxt"||weapon==="Kriegshammer"||weapon==="Langschwert"){dmgDie="1W8";dmgMod=strMod;atkMod=strMod;}
-  if(weapon==="Kurzschwert"){dmgDie="1W6";dmgMod=finesse;atkMod=finesse;}
-  if(weapon==="Speer"){dmgDie="1W6";dmgMod=strMod;atkMod=strMod;range="Nahkampf / Wurf";}
-  if(weapon==="Dolch"){dmgDie="1W4";dmgMod=finesse;atkMod=finesse;range="Nahkampf / Wurf";}
-  if(weapon==="Langbogen"){dmgDie="1W8";dmgMod=dexMod;atkMod=dexMod;range="Fernkampf";}
-  if(weapon==="Armbrust"){dmgDie="1W8";dmgMod=dexMod;atkMod=dexMod;range="Fernkampf";}
-  return {weapon,dmgDie,dmgMod,atkMod,range,atk:fmt(pb+atkMod),dmgBonus:fmt(dmgMod)};
+function getRecentCreative(){
+  try{return JSON.parse(localStorage.getItem("npcSchmiedeRecentCreative")||"[]")}catch(e){return[]}
 }
+function rememberCreative(npc){
+  const recent=getRecentCreative();
+  recent.unshift({quirk:npc.quirk,secret:npc.secret,speech:npc.speech,name:npc.name});
+  localStorage.setItem("npcSchmiedeRecentCreative",JSON.stringify(recent.slice(0,12)));
+}
+const skillAbility={
+  "Athletik":0,"Akrobatik":1,"Fingerfertigkeit":1,"Heimlichkeit":1,"Arkane Kunde":3,"Geschichte":3,"Nachforschungen":3,"Naturkunde":3,"Religion":3,
+  "Tierführung":4,"Menschenkenntnis":4,"Heilkunde":4,"Wahrnehmung":4,"Überleben":4,"Täuschung":5,"Einschüchtern":5,"Auftreten":5,"Überreden":5,"Handwerk":3
+};
+async function generateNPC(){
+  const status=document.getElementById("npcStatus");
+  const button=document.querySelector('button[onclick="generateNPC()"]');
+  const keywords=document.getElementById("keywords").value.trim();
+  if(!keywords){status.textContent="Bitte zuerst 1–3 Stichworte eingeben.";return;}
+  const role=document.getElementById("role").value;
+  const gender=document.getElementById("gender").value;
+  const lv=document.getElementById("level").value;
+  const level=lv==="random"?1+Math.floor(Math.random()*12):parseInt(lv);
+  const pb=2+Math.floor((level-1)/4);
 
-const meleePool=["Langschwert","Streitaxt","Kriegshammer","Kurzschwert","Speer","Dolch"];
-const rangedPool=["Langbogen","Armbrust","Speer","Dolch"];
-let primary=weaponStats(pick(meleePool));
-let secondary=weaponStats(pick(rangedPool.filter(w=>w!==primary.weapon)));
+  status.textContent="✨ Charakter wird von der KI ausgearbeitet …";
+  if(button)button.disabled=true;
+  try{
+    const res=await fetch('/api/generate-npc',{
+      method:'POST',headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({keywords,level,role,gender,recent:getRecentCreative()})
+    });
+    const npc=await res.json();
+    if(!res.ok) throw new Error(npc.error||'KI-Generierung fehlgeschlagen');
 
-let attacks=1;
-if(level>=5) attacks=2;
-if(level>=11 && role==="Gegner") attacks=3;
-if(level>=17 && role==="Gegner") attacks=4;
+    const vals=[8,10,11,12,13,14,15,16,17,18].sort(()=>Math.random()-.5).slice(0,6), dex=vals[1],con=vals[2];
+    const ac=10+Math.max(0,mod(dex))+Math.floor(level/6)+(role==="Gegner"?2:0);
+    const hp=Math.max(6,8+level*(4+Math.max(0,mod(con)))+(role==="Gegner"?level*3:0));
 
-let special=role==="Gegner"
- ? pick(["Einmal pro Runde 1W6 zusätzlicher Schaden.","Als Bonusaktion halbe Bewegung ohne Gelegenheitsangriffe.","Einmal pro kurze Rast Vorteil auf Angriffe.","Unter halben TP kurzzeitig +2 RK."])
- : pick(["Vorteil auf passende Berufsproben.","Kann lokale Gerüchte und Kontakte beschaffen.","Erkennt Unstimmigkeiten im eigenen Fachgebiet.","Kann über Kontakte einfache Hilfe organisieren."]);
+    document.getElementById("name").textContent=npc.name;
+    document.getElementById("meta").textContent=`${npc.race} · ${npc.profession} · Level ${level} · ${npc.age} Jahre · ${npc.gender}`;
+    document.getElementById("ac").textContent=ac;document.getElementById("hp").textContent=hp;document.getElementById("pb").textContent="+"+pb;document.getElementById("init").textContent=fmt(mod(dex));
+    const labs=["STÄ","GES","KON","INT","WEI","CHA"];document.getElementById("stats").innerHTML=labs.map((x,i)=>`<div class="stat"><b>${x}</b><span>${vals[i]}</span><div>${fmt(mod(vals[i]))}</div></div>`).join("");
 
-document.getElementById("combat").innerHTML=
-`<b>Angriffe pro Runde:</b> ${attacks}<br><br>
- <b>Hauptwaffe – ${primary.weapon}</b> <span style="color:#aaa">(${primary.range})</span><br>
- Trefferbonus: ${primary.atk}<br>
- Schaden: ${primary.dmgDie} ${primary.dmgBonus} Schaden pro Treffer<br><br>
- <b>Zweitwaffe – ${secondary.weapon}</b> <span style="color:#aaa">(${secondary.range})</span><br>
- Trefferbonus: ${secondary.atk}<br>
- Schaden: ${secondary.dmgDie} ${secondary.dmgBonus} Schaden pro Treffer<br><br>
- <b>Besondere Fähigkeit:</b> ${special}`;
-document.getElementById("result").style.display="block";document.getElementById("saved").style.display="none";document.getElementById("result").scrollIntoView({behavior:"smooth"});
+    document.getElementById("appearance").textContent=npc.appearance;
+    document.getElementById("clothing").textContent=npc.clothing;
+    document.getElementById("personality").textContent=npc.personality;
+    document.getElementById("motivation").textContent=npc.motivation;
+    document.getElementById("quirk").textContent=npc.quirk;
+    document.getElementById("secret").textContent=npc.secret;
+    document.getElementById("speech").textContent=npc.speech;
+    document.getElementById("ibf").innerHTML=`<div>Ideal</div><div>${npc.ideal}</div><div>Bindung</div><div>${npc.bond}</div><div>Makel</div><div>${npc.flaw}</div>`;
+
+    const ss=(npc.skills||[]).slice(0,4);
+    document.getElementById("skills").innerHTML=ss.map(skill=>{
+      const idx=skillAbility[skill] ?? 4;
+      return `${skill} ${fmt(pb+Math.max(0,mod(vals[idx])))}`;
+    }).join("<br>");
+
+    const strMod=mod(vals[0]), dexMod=mod(vals[1]), finesse=Math.max(strMod,dexMod);
+    function weaponStats(weapon){
+      let dmgDie="1W8", dmgMod=strMod, atkMod=strMod, range="Nahkampf";
+      if(weapon==="Streitaxt"||weapon==="Kriegshammer"||weapon==="Langschwert"){dmgDie="1W8";dmgMod=strMod;atkMod=strMod;}
+      if(weapon==="Kurzschwert"){dmgDie="1W6";dmgMod=finesse;atkMod=finesse;}
+      if(weapon==="Speer"){dmgDie="1W6";dmgMod=strMod;atkMod=strMod;range="Nahkampf / Wurf";}
+      if(weapon==="Dolch"){dmgDie="1W4";dmgMod=finesse;atkMod=finesse;range="Nahkampf / Wurf";}
+      if(weapon==="Langbogen"){dmgDie="1W8";dmgMod=dexMod;atkMod=dexMod;range="Fernkampf";}
+      if(weapon==="Armbrust"){dmgDie="1W8";dmgMod=dexMod;atkMod=dexMod;range="Fernkampf";}
+      return {weapon,dmgDie,dmgMod,atkMod,range,atk:fmt(pb+atkMod),dmgBonus:fmt(dmgMod)};
+    }
+    const meleePool=["Langschwert","Streitaxt","Kriegshammer","Kurzschwert","Speer","Dolch"];
+    const rangedPool=["Langbogen","Armbrust","Speer","Dolch"];
+    const primary=weaponStats(pick(meleePool));
+    const secondary=weaponStats(pick(rangedPool.filter(w=>w!==primary.weapon)));
+    let attacks=1;if(level>=5)attacks=2;if(level>=11&&role==="Gegner")attacks=3;if(level>=17&&role==="Gegner")attacks=4;
+    const special=role==="Gegner"?pick(["Einmal pro Runde 1W6 zusätzlicher Schaden.","Als Bonusaktion halbe Bewegung ohne Gelegenheitsangriffe.","Einmal pro kurze Rast Vorteil auf Angriffe.","Unter halben TP kurzzeitig +2 RK."]):pick(["Vorteil auf passende Berufsproben.","Kann lokale Gerüchte und Kontakte beschaffen.","Erkennt Unstimmigkeiten im eigenen Fachgebiet.","Kann über Kontakte einfache Hilfe organisieren."]);
+    document.getElementById("combat").innerHTML=`<b>Angriffe pro Runde:</b> ${attacks}<br><br><b>Hauptwaffe – ${primary.weapon}</b> <span style="color:#aaa">(${primary.range})</span><br>Trefferbonus: ${primary.atk}<br>Schaden: ${primary.dmgDie} ${primary.dmgBonus} Schaden pro Treffer<br><br><b>Zweitwaffe – ${secondary.weapon}</b> <span style="color:#aaa">(${secondary.range})</span><br>Trefferbonus: ${secondary.atk}<br>Schaden: ${secondary.dmgDie} ${secondary.dmgBonus} Schaden pro Treffer<br><br><b>Besondere Fähigkeit:</b> ${special}`;
+
+    document.getElementById("portraitBox").innerHTML='Noch kein Portrait.<br><br><b>Antippen für Spieleransicht</b>';
+    document.getElementById("playerImage").innerHTML='<div id="playerPlaceholder">Noch kein Portrait vorhanden.<br><br><span style="font-size:14px;color:#aaa">Antippen zum Schließen</span></div>';
+    document.getElementById("imageStatus").textContent="";
+    document.getElementById("result").style.display="block";document.getElementById("saved").style.display="none";
+    rememberCreative(npc);
+    status.textContent="✓ Neuer KI-Charakter erzeugt. Eigenart, Geheimnis und Sprechweise werden mit den letzten NSC abgeglichen.";
+    document.getElementById("result").scrollIntoView({behavior:"smooth"});
+  }catch(err){
+    status.textContent="Fehler bei der KI-Generierung: "+err.message;
+  }finally{if(button)button.disabled=false;}
 }
 function randomPrompt(){document.getElementById("keywords").value=pick(["alte Zwergin, Schmiedin, mürrisch","junger Elf, Spion, nervös","Halbork, Wirt, freundlich","Mensch, Priester, geheimnisvoll","Elfin, Jägerin, arrogant","Zwerg, Händler, misstrauisch"])}
 function clearAll(){document.getElementById("keywords").value="";document.getElementById("result").style.display="none"}
@@ -232,7 +261,7 @@ async function generateImage(){
     status.textContent="✓ Portrait erzeugt. Antippen zeigt nur das Bild.";
   }catch(err){status.textContent="Fehler: "+err.message;}
 }
-generateNPC();renderSavedNPCs();
+renderSavedNPCs();
 </script>
 
 <div id="playerView" onclick="closePlayerView()" style="
