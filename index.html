@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NPC-Schmiede v0.44</title>
+<title>NPC-Schmiede v0.45</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -31,7 +31,7 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 .portrait img{width:100%;height:100%;object-fit:cover;border-radius:14px}#playerImage img{max-width:100vw;max-height:100vh;object-fit:contain}</style>
 </head>
 <body><div class="wrap">
-<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Fantasy NPC Generator – KI-Charaktere + 5e-Werte</div></div><div class="badge">v0.44</div></header>
+<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Fantasy NPC Generator – KI-Charaktere + 5e-Werte</div></div><div class="badge">v0.45</div></header>
 
 <div id="mainScreen">
 <div class="card">
@@ -42,7 +42,7 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 <div><label>Geschlecht</label><select id="gender"><option>Zufällig</option><option>Weiblich</option><option>Männlich</option><option>Divers</option></select></div>
 </div>
 <div class="buttons"><button onclick="generateNPC()">✨ NPC generieren</button><button class="secondary" onclick="randomPrompt()">🎲 Stichworte</button><button class="secondary" onclick="clearAll()">Leeren</button><button class="secondary" onclick="showLibrary()">📚 Gespeicherte NSC <span id="savedCount"></span></button></div>
-<div class="api"><b>KI aktiv:</b> Kreative Charaktertexte werden über GPT-5.6 Luna erzeugt. Regelwerte und Kampfwerte berechnet die App lokal. Portraits werden weiterhin nur auf Knopfdruck erzeugt.</div><div id="npcStatus" class="note" style="margin-top:10px"></div>
+<div class="api"><b>KI aktiv:</b> Kreative Charaktertexte werden über GPT-5.6 Luna erzeugt. Regelwerte und Kampfwerte berechnet die App lokal. Portraits werden weiterhin nur auf Knopfdruck erzeugt.<br><b>☁ Synchronisierung:</b> Gespeicherte NSC können über Deinen privaten Cloud-Speicher zwischen Tablet und PC synchronisiert werden.</div><div id="syncStatus" class="note" style="margin-top:8px"></div><div id="npcStatus" class="note" style="margin-top:10px"></div>
 </div>
 
 <div id="result" class="card result">
@@ -72,14 +72,15 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 </div>
 <div style="margin-top:12px"><label>Freie SL-Notizen</label><textarea id="gmNotes" placeholder="Begegnungen mit der Gruppe, Versprechen, offene Aufgaben, Änderungen am Charakter ..."></textarea></div>
 <div class="note">Diese Angaben sind reine SL-Informationen und erscheinen niemals in der Spieleransicht.</div></div><div class="buttons"><button class="secondary" id="saveNpcButton" onclick="saveNPC()">☆ NPC speichern</button><button class="secondary" onclick="toggleEditMode()">✏ Bearbeiten</button><button class="secondary" onclick="generateNPC()">↻ Neu generieren</button><button class="secondary" onclick="generateImage()">🎨 Portrait generieren</button></div>
-<div id="saved" class="saved">✓ NPC lokal für diesen Prototyp gespeichert.</div><div id="imageStatus" class="note" style="margin-top:10px"></div>
+<div id="saved" class="saved">✓ NPC gespeichert.</div><div id="imageStatus" class="note" style="margin-top:10px"></div>
 </div>
 </div>
 </div>
 
 <div id="libraryScreen" style="display:none">
   <div class="card">
-    <div class="library-head"><div><h2 style="margin:0">📚 Gespeicherte NSC</h2><div class="note">Hier findest Du alle lokal gespeicherten NSC. Öffnen lädt genau diesen NSC samt zugehörigem Portrait und schaltet die Bearbeitung frei.</div></div><button class="secondary" onclick="showMainScreen()">← Zurück</button></div>
+    <div class="library-head"><div><h2 style="margin:0">📚 Gespeicherte NSC</h2><div class="note">Deine private Sammlung. Bei aktiver Cloud-Verbindung erscheinen hier auf Tablet und PC dieselben NSC samt Portraits.</div></div><div class="npcactions"><button class="secondary" onclick="changeSyncSecret()">☁ Verbindung</button><button class="secondary" onclick="showMainScreen()">← Zurück</button></div></div>
+    <div id="librarySyncStatus" class="note" style="margin-bottom:10px"></div>
     <div class="searchbox">
       <input id="npcSearch" placeholder="Suche nach Name, Ort, Beruf, Volk, Notiz oder bekanntem NSC ..." oninput="renderSavedNPCs()">
       <button class="secondary" onclick="renderSavedNPCs()">🔎 Suchen</button>
@@ -201,9 +202,78 @@ function clearAll(){document.getElementById("keywords").value="";document.getEle
 function getSavedNPCs(){
   try{return JSON.parse(localStorage.getItem("npcSchmiedeNPCs")||"[]")}catch(e){return[]}
 }
+function setLocalSavedNPCs(list){localStorage.setItem("npcSchmiedeNPCs",JSON.stringify(list||[]));}
+let cloudNpcIndex=[];
+let cloudReady=false;
+function getSyncSecret(){return localStorage.getItem("npcSchmiedeSyncSecret")||"";}
+function setSyncStatus(text){
+  const a=document.getElementById("syncStatus"), b=document.getElementById("librarySyncStatus");
+  if(a)a.textContent=text||""; if(b)b.textContent=text||"";
+}
+function ensureSyncSecret(){
+  let secret=getSyncSecret();
+  if(secret)return secret;
+  secret=prompt("Bitte Dein privates Synchronisierungs-Passwort eingeben.\n\nDasselbe Passwort verwendest Du einmalig auf Tablet und PC.")||"";
+  secret=secret.trim();
+  if(secret)localStorage.setItem("npcSchmiedeSyncSecret",secret);
+  return secret;
+}
+function changeSyncSecret(){
+  const secret=prompt("Synchronisierungs-Passwort für dieses Gerät eingeben oder ändern:",getSyncSecret())||"";
+  if(!secret.trim())return;
+  localStorage.setItem("npcSchmiedeSyncSecret",secret.trim());
+  cloudReady=false; cloudNpcIndex=[]; connectCloud(true);
+}
+async function cloudFetch(path,options={}){
+  const secret=ensureSyncSecret();
+  if(!secret)throw new Error("Kein Synchronisierungs-Passwort eingetragen.");
+  const headers={...(options.headers||{}),'X-NPC-Sync-Secret':secret};
+  const res=await fetch(path,{...options,headers});
+  const data=await res.json().catch(()=>({}));
+  if(!res.ok)throw new Error(data.error||`Cloud-Fehler ${res.status}`);
+  return data;
+}
+async function connectCloud(allowMigration=false){
+  if(!getSyncSecret()){
+    setSyncStatus("☁ Cloud-Verbindung noch nicht eingerichtet.");
+    updateSavedCount(); return false;
+  }
+  try{
+    setSyncStatus("☁ Verbindung wird hergestellt …");
+    const data=await cloudFetch('/api/sync-npcs');
+    cloudNpcIndex=data.npcs||[]; cloudReady=true;
+    setSyncStatus(`☁ Synchronisiert – ${cloudNpcIndex.length} NSC in Deiner Sammlung.`);
+    updateSavedCount();
+    if(allowMigration)await offerLocalMigration();
+    return true;
+  }catch(e){
+    cloudReady=false;
+    setSyncStatus("⚠ "+e.message+" Lokale Sicherung bleibt erhalten.");
+    updateSavedCount(); return false;
+  }
+}
+async function offerLocalMigration(){
+  if(localStorage.getItem("npcSchmiedeCloudMigrated")==="yes")return;
+  const locals=getSavedNPCs();
+  if(!locals.length){localStorage.setItem("npcSchmiedeCloudMigrated","yes");return;}
+  if(!confirm(`${locals.length} lokal gespeicherte NSC gefunden.\n\nSollen sie jetzt in Deine Cloud-Sammlung übernommen werden?\n\nDie lokalen Daten bleiben zusätzlich als Sicherung erhalten.`))return;
+  setSyncStatus(`☁ Übertrage ${locals.length} lokale NSC …`);
+  let done=0;
+  for(const npc of locals){
+    try{
+      const portrait=await loadPortrait(npc.id);
+      const cloudPortrait=portrait?await preparePortraitForCloud(portrait):null;
+      await cloudFetch('/api/sync-npcs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({npc,portrait:cloudPortrait})});
+      done++;
+    }catch(e){console.warn("Migration fehlgeschlagen",npc?.name,e);}
+  }
+  if(done===locals.length)localStorage.setItem("npcSchmiedeCloudMigrated","yes");
+  await connectCloud(false);
+  setSyncStatus(`☁ ${done} von ${locals.length} lokalen NSC übernommen. Sammlung synchronisiert.`);
+}
 function updateSavedCount(){
   const el=document.getElementById("savedCount");
-  if(el){const n=getSavedNPCs().length;el.textContent=n?`(${n})`:"";}
+  if(el){const n=cloudReady?cloudNpcIndex.length:getSavedNPCs().length;el.textContent=n?`(${n})`:"";}
 }
 function openPortraitDB(){
   return new Promise((resolve,reject)=>{
@@ -222,15 +292,28 @@ async function loadPortrait(id){
 async function deletePortrait(id){
   try{const db=await openPortraitDB();await new Promise((resolve,reject)=>{const tx=db.transaction("portraits","readwrite");tx.objectStore("portraits").delete(String(id));tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});db.close();}catch(e){console.warn("Portrait konnte nicht gelöscht werden",e);}
 }
+function preparePortraitForCloud(data){
+  return new Promise(resolve=>{
+    if(!data||!String(data).startsWith('data:image/'))return resolve(data||null);
+    const img=new Image();
+    img.onload=()=>{
+      const maxW=900,maxH=1200,scale=Math.min(1,maxW/img.width,maxH/img.height);
+      const c=document.createElement('canvas'); c.width=Math.max(1,Math.round(img.width*scale)); c.height=Math.max(1,Math.round(img.height*scale));
+      c.getContext('2d').drawImage(img,0,0,c.width,c.height);
+      resolve(c.toDataURL('image/jpeg',0.86));
+    };
+    img.onerror=()=>resolve(data); img.src=data;
+  });
+}
 function resetPortrait(){
   currentPortraitData=null;
   document.getElementById("portraitBox").innerHTML='Noch kein Portrait.<br><br><b>Antippen für Spieleransicht</b>';
   document.getElementById("playerImage").innerHTML='<div id="playerPlaceholder">Noch kein Portrait vorhanden.<br><br><span style="font-size:14px;color:#aaa">Antippen zum Schließen</span></div>';
 }
-function showLibrary(){
+async function showLibrary(){
   document.getElementById("mainScreen").style.display="none";
   document.getElementById("libraryScreen").style.display="block";
-  renderSavedNPCs(); window.scrollTo({top:0,behavior:"smooth"});
+  await connectCloud(true); renderSavedNPCs(); window.scrollTo({top:0,behavior:"smooth"});
 }
 function showMainScreen(){
   document.getElementById("libraryScreen").style.display="none";
@@ -246,99 +329,84 @@ function setEditMode(on){
   document.getElementById("result")?.classList.toggle("editing",editMode);
 }
 function toggleEditMode(){setEditMode(!editMode);}
-async function saveNPC(){
+function collectCurrentNPC(){
   const stats=[...document.querySelectorAll("#stats .stat")].map(x=>x.innerText.replace(/\n/g," "));
-  const npc={
-    id:currentNpcId||Date.now(),
-    name:document.getElementById("name").textContent,
-    meta:document.getElementById("meta").textContent,
-    ac:document.getElementById("ac").textContent,
-    hp:document.getElementById("hp").textContent,
-    pb:document.getElementById("pb").textContent,
-    init:document.getElementById("init").textContent,
-    stats:stats,
-    appearance:document.getElementById("appearance").textContent,
-    clothing:document.getElementById("clothing").textContent,
-    personality:document.getElementById("personality").textContent,
-    motivation:document.getElementById("motivation").textContent,
-    quirk:document.getElementById("quirk").textContent,
-    ibf:document.getElementById("ibf").innerText,
-    secret:document.getElementById("secret").textContent,
-    skills:document.getElementById("skills").innerText,
-    speech:document.getElementById("speech").textContent,
-    combat:document.getElementById("combat").innerText,
-    usedWhere:document.getElementById("usedWhere").value,
-    knownNPCs:document.getElementById("knownNPCs").value,
-    gmNotes:document.getElementById("gmNotes").value
+  return {
+    id:currentNpcId||Date.now(), name:document.getElementById("name").textContent, meta:document.getElementById("meta").textContent,
+    ac:document.getElementById("ac").textContent,hp:document.getElementById("hp").textContent,pb:document.getElementById("pb").textContent,init:document.getElementById("init").textContent,
+    stats,appearance:document.getElementById("appearance").textContent,clothing:document.getElementById("clothing").textContent,
+    personality:document.getElementById("personality").textContent,motivation:document.getElementById("motivation").textContent,quirk:document.getElementById("quirk").textContent,
+    ibf:document.getElementById("ibf").innerText,secret:document.getElementById("secret").textContent,skills:document.getElementById("skills").innerText,
+    speech:document.getElementById("speech").textContent,combat:document.getElementById("combat").innerText,usedWhere:document.getElementById("usedWhere").value,
+    knownNPCs:document.getElementById("knownNPCs").value,gmNotes:document.getElementById("gmNotes").value
   };
-  const list=getSavedNPCs();
-  const idx=list.findIndex(x=>x.id===npc.id);
-  if(idx>=0) list[idx]=npc; else list.unshift(npc);
-  localStorage.setItem("npcSchmiedeNPCs",JSON.stringify(list));
-  currentNpcId=npc.id;
-  if(currentPortraitData) await savePortrait(npc.id,currentPortraitData);
-  document.getElementById("saved").textContent=idx>=0?"✓ Änderungen gespeichert.":"✓ NPC gespeichert.";
+}
+function mirrorLocalNPC(npc,portrait){
+  const list=getSavedNPCs(); const idx=list.findIndex(x=>String(x.id)===String(npc.id));
+  if(idx>=0)list[idx]=npc;else list.unshift(npc); setLocalSavedNPCs(list);
+  if(portrait)savePortrait(npc.id,portrait);
+}
+async function saveNPC(){
+  const npc=collectCurrentNPC(); currentNpcId=npc.id;
+  const existed=(cloudReady?cloudNpcIndex:getSavedNPCs()).some(x=>String(x.id)===String(npc.id));
+  document.getElementById("saved").style.display="none";
+  try{
+    if(!cloudReady)await connectCloud(true);
+    if(!cloudReady)throw new Error("Keine Cloud-Verbindung.");
+    const cloudPortrait=currentPortraitData?await preparePortraitForCloud(currentPortraitData):null;
+    if(cloudPortrait)currentPortraitData=cloudPortrait;
+    await cloudFetch('/api/sync-npcs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({npc,portrait:cloudPortrait})});
+    mirrorLocalNPC(npc,currentPortraitData);
+    await connectCloud(false);
+    document.getElementById("saved").textContent=existed?"✓ Änderungen gespeichert und synchronisiert.":"✓ NPC gespeichert und synchronisiert.";
+  }catch(e){
+    mirrorLocalNPC(npc,currentPortraitData);
+    document.getElementById("saved").textContent="⚠ Cloud nicht erreichbar – lokal gesichert. "+e.message;
+  }
   document.getElementById("saved").style.display="block";
   document.getElementById("saveNpcButton").textContent="💾 Änderungen speichern";
-  renderSavedNPCs();
-  updateSavedCount();
+  renderSavedNPCs(); updateSavedCount();
 }
 function renderSavedNPCs(){
   const q=(document.getElementById("npcSearch")?.value||"").toLowerCase().trim();
-  const list=getSavedNPCs().filter(n=>JSON.stringify(n).toLowerCase().includes(q));
-  const box=document.getElementById("npcList");
-  if(!box)return;
+  const base=cloudReady?cloudNpcIndex:getSavedNPCs();
+  const list=base.filter(n=>JSON.stringify(n).toLowerCase().includes(q));
+  const box=document.getElementById("npcList"); if(!box)return;
   if(!list.length){box.innerHTML='<div class="note">Keine passenden gespeicherten NSC gefunden.</div>';return;}
-  box.innerHTML=list.map(n=>`<div class="npcrow">
-    <div><b>${n.name}</b><small>${n.meta}</small><small>${n.usedWhere ? "Eingesetzt: "+n.usedWhere : "Noch kein Einsatzort eingetragen"}</small></div>
-    <div class="npcactions">
-      <button class="secondary" onclick="loadNPC(${n.id})">Öffnen & bearbeiten</button>
-      <button class="secondary danger" onclick="deleteNPC(${n.id})">🗑 Löschen</button>
-    </div>
-  </div>`).join("");
+  box.innerHTML=list.map(n=>`<div class="npcrow"><div><b>${escapeHtml(n.name||'Unbenannter NSC')}</b><small>${escapeHtml(n.meta||'')}</small><small>${n.usedWhere?"Eingesetzt: "+escapeHtml(n.usedWhere):"Noch kein Einsatzort eingetragen"}</small></div><div class="npcactions"><button class="secondary" onclick="loadNPC('${String(n.id).replace(/'/g,"\\'")}')">Öffnen & bearbeiten</button><button class="secondary danger" onclick="deleteNPC('${String(n.id).replace(/'/g,"\\'")}')">🗑 Löschen</button></div></div>`).join("");
 }
+function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 async function deleteNPC(id){
-  const list=getSavedNPCs();
-  const npc=list.find(x=>x.id===id);
-  if(!npc)return;
-  if(!confirm(`„${npc.name}“ wirklich löschen?\n\nDiese Aktion kann nicht rückgängig gemacht werden.`))return;
-  const next=list.filter(x=>x.id!==id);
-  localStorage.setItem("npcSchmiedeNPCs",JSON.stringify(next));
-  await deletePortrait(id);
-  if(currentNpcId===id){currentNpcId=null;resetPortrait();document.getElementById("result").style.display="none";}
-  renderSavedNPCs();
-  updateSavedCount();
+  let meta=(cloudReady?cloudNpcIndex:getSavedNPCs()).find(x=>String(x.id)===String(id)); if(!meta)return;
+  if(!confirm(`„${meta.name}“ wirklich löschen?\n\nDiese Aktion löscht den NSC auf allen verbundenen Geräten und kann nicht rückgängig gemacht werden.`))return;
+  try{
+    if(!cloudReady)await connectCloud(false);
+    if(cloudReady)await cloudFetch('/api/sync-npcs?id='+encodeURIComponent(id),{method:'DELETE'});
+  }catch(e){alert("Cloud-Löschen fehlgeschlagen: "+e.message);return;}
+  const next=getSavedNPCs().filter(x=>String(x.id)!==String(id)); setLocalSavedNPCs(next); await deletePortrait(id);
+  if(String(currentNpcId)===String(id)){currentNpcId=null;resetPortrait();document.getElementById("result").style.display="none";}
+  await connectCloud(false); renderSavedNPCs(); updateSavedCount();
 }
 async function loadNPC(id){
-  const n=getSavedNPCs().find(x=>x.id===id); if(!n)return;
+  let n=null,image=null;
+  try{
+    if(!cloudReady)await connectCloud(false);
+    if(cloudReady){const rec=await cloudFetch('/api/sync-npcs?id='+encodeURIComponent(id));n=rec.npc;image=rec.portrait||null;}
+  }catch(e){console.warn(e);}
+  if(!n){n=getSavedNPCs().find(x=>String(x.id)===String(id)); if(n)image=await loadPortrait(n.id);}
+  if(!n)return;
   currentNpcId=n.id;
   document.getElementById("name").textContent=n.name; document.getElementById("meta").textContent=n.meta;
-  document.getElementById("ac").textContent=n.ac; document.getElementById("hp").textContent=n.hp;
-  document.getElementById("pb").textContent=n.pb; document.getElementById("init").textContent=n.init;
+  document.getElementById("ac").textContent=n.ac; document.getElementById("hp").textContent=n.hp; document.getElementById("pb").textContent=n.pb; document.getElementById("init").textContent=n.init;
   const labs=["STÄ","GES","KON","INT","WEI","CHA"];
-  document.getElementById("stats").innerHTML=(n.stats||[]).map((v,i)=>`<div class="stat"><b>${labs[i]||""}</b><span>${v.split(" ")[1]||""}</span><div>${v.split(" ").slice(2).join(" ")}</div></div>`).join("");
-  document.getElementById("appearance").textContent=n.appearance||""; document.getElementById("clothing").textContent=n.clothing||"";
-  document.getElementById("personality").textContent=n.personality||""; document.getElementById("motivation").textContent=n.motivation||"";
-  document.getElementById("quirk").textContent=n.quirk||""; document.getElementById("ibf").innerText=n.ibf||"";
-  document.getElementById("secret").textContent=n.secret||""; document.getElementById("skills").innerText=n.skills||"";
-  document.getElementById("speech").textContent=n.speech||""; document.getElementById("combat").innerText=n.combat||"";
-  document.getElementById("usedWhere").value=n.usedWhere||""; document.getElementById("knownNPCs").value=n.knownNPCs||"";
-  document.getElementById("gmNotes").value=n.gmNotes||"";
-  const image=await loadPortrait(n.id);
-  if(image){
-    currentPortraitData=image;
-    document.getElementById("portraitBox").innerHTML=`<img src="${image}" alt="NSC Portrait">`;
-    document.getElementById("playerImage").innerHTML=`<img src="${image}" alt="Spieleransicht">`;
-  }else{
-    resetPortrait();
-  }
-  document.getElementById("imageStatus").textContent=image?"✓ Gespeichertes Portrait geladen.":"Für diesen gespeicherten NSC ist noch kein Portrait hinterlegt.";
-  document.getElementById("saved").style.display="none";
-  document.getElementById("saveNpcButton").textContent="💾 Änderungen speichern";
-  setEditMode(true);
-  showMainScreen();
-  document.getElementById("result").style.display="block";
-  document.getElementById("result").scrollIntoView({behavior:"smooth"});
+  document.getElementById("stats").innerHTML=(n.stats||[]).map((v,i)=>`<div class="stat"><b>${labs[i]||""}</b><span>${String(v).split(" ")[1]||""}</span><div>${String(v).split(" ").slice(2).join(" ")}</div></div>`).join("");
+  document.getElementById("appearance").textContent=n.appearance||"";document.getElementById("clothing").textContent=n.clothing||"";document.getElementById("personality").textContent=n.personality||"";document.getElementById("motivation").textContent=n.motivation||"";
+  document.getElementById("quirk").textContent=n.quirk||"";document.getElementById("ibf").innerText=n.ibf||"";document.getElementById("secret").textContent=n.secret||"";document.getElementById("skills").innerText=n.skills||"";
+  document.getElementById("speech").textContent=n.speech||"";document.getElementById("combat").innerText=n.combat||"";document.getElementById("usedWhere").value=n.usedWhere||"";document.getElementById("knownNPCs").value=n.knownNPCs||"";document.getElementById("gmNotes").value=n.gmNotes||"";
+  if(image){currentPortraitData=image;document.getElementById("portraitBox").innerHTML=`<img src="${image}" alt="NSC Portrait">`;document.getElementById("playerImage").innerHTML=`<img src="${image}" alt="Spieleransicht">`;await savePortrait(n.id,image);}else resetPortrait();
+  mirrorLocalNPC(n,image);
+  document.getElementById("imageStatus").textContent=image?"✓ Synchronisiertes Portrait geladen.":"Für diesen NSC ist noch kein Portrait hinterlegt.";
+  document.getElementById("saved").style.display="none";document.getElementById("saveNpcButton").textContent="💾 Änderungen speichern";setEditMode(true);showMainScreen();document.getElementById("result").style.display="block";document.getElementById("result").scrollIntoView({behavior:"smooth"});
 }
 function openPlayerView(){document.getElementById("playerView").style.display="flex"}
 function closePlayerView(){document.getElementById("playerView").style.display="none"}
@@ -364,6 +432,7 @@ async function generateImage(){
 }
 renderSavedNPCs();
 updateSavedCount();
+if(getSyncSecret()) connectCloud(false);
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('/service-worker.js').catch(()=>{}));
 }

@@ -1,14 +1,23 @@
-NPC-Schmiede v0.41
+NPC-Schmiede v0.45
 
-Neu:
-- Kreative NPC-Texte werden über /api/generate-npc mit GPT-5.6 Luna erzeugt.
-- Eigenart, Geheimnis und Sprechweise werden gegen die letzten 12 lokal erzeugten NPCs auf Wiederholungen geprüft.
-- Regelwerte, Angriffe und Schaden werden weiterhin lokal berechnet.
-- Portraitgenerierung bleibt separat und erfolgt nur per Klick.
-- Kein automatischer API-Aufruf beim Laden der Seite.
+Neu in v0.45:
+- Private Cloud-Synchronisierung der gespeicherten NSC zwischen Tablet und PC.
+- Portraits werden ebenfalls synchronisiert (für die Cloud platzsparend komprimiert).
+- Bestehende lokale NSC können beim ersten Verbinden in die Cloud übernommen werden.
+- Cloud ist die gemeinsame Sammlung; lokale Daten bleiben zusätzlich als Sicherung erhalten.
+- Löschen wirkt auf allen verbundenen Geräten.
+- Die Verbindung ist mit einem persönlichen Synchronisierungs-Passwort geschützt.
 
-Vercel:
-OPENAI_API_KEY muss als Environment Variable gesetzt sein.
+Benötigte Vercel Environment Variables:
+- OPENAI_API_KEY (bereits vorhanden)
+- UPSTASH_REDIS_REST_URL
+- UPSTASH_REDIS_REST_TOKEN
+- NPC_SYNC_SECRET
 
+UPSTASH_REDIS_REST_URL und UPSTASH_REDIS_REST_TOKEN stammen aus einer Upstash Redis Datenbank.
+NPC_SYNC_SECRET ist ein selbst gewähltes privates Passwort. Es darf NICHT in GitHub eingetragen werden.
 
-v0.43: Gespeicherte NSC auf eigener Ansicht, Bearbeiten/Aktualisieren, Portrait-Zuordnung via IndexedDB korrigiert.
+Wichtig:
+- Redis-Zugangsdaten bleiben ausschließlich serverseitig in Vercel.
+- Der Browser kennt nur das persönliche Synchronisierungs-Passwort.
+- Die OpenAI-Generierung bleibt unverändert: Text nur bei "NPC generieren", Bild nur bei "Portrait generieren".
