@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NPC-Schmiede v0.42</title>
+<title>NPC-Schmiede v0.43</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -17,7 +17,8 @@
 .card{background:rgba(24,29,37,.96);border:1px solid var(--line);border-radius:18px;padding:18px;margin-bottom:18px;box-shadow:0 16px 45px rgba(0,0,0,.23)}
 .formgrid{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px}label{display:block;font-weight:700;margin-bottom:7px}input,select,button,textarea{width:100%;border-radius:12px;padding:13px 14px;font-size:16px}
 input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(--text)}textarea{min-height:110px;resize:vertical;font-family:inherit}button{border:none;background:var(--accent);font-weight:800;cursor:pointer}button.secondary{background:var(--panel2);color:var(--text);border:1px solid var(--line)}
-.buttons{display:grid;grid-template-columns:2fr 1fr 1fr;gap:10px;margin-top:12px}.api{margin-top:12px;border-left:4px solid var(--accent);padding:12px;background:#151a21;border-radius:10px;color:#d8d3c9;font-size:13px}
+.buttons{display:grid;grid-template-columns:2fr 1fr 1fr 1fr;gap:10px;margin-top:12px}
+.library-head{display:flex;gap:10px;align-items:center;justify-content:space-between;margin-bottom:14px}.library-head button{width:auto}.editbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:12px}.editbar button{width:auto}.editing [contenteditable="true"]{outline:1px dashed #d1a54a;outline-offset:4px;border-radius:6px}.editing [contenteditable="true"]:focus{outline:2px solid #d1a54a;background:#10151c}.screen-hidden{display:none!important}.api{margin-top:12px;border-left:4px solid var(--accent);padding:12px;background:#151a21;border-radius:10px;color:#d8d3c9;font-size:13px}
 .result{display:none}.hero{display:grid;grid-template-columns:220px 1fr;gap:18px}.portrait{aspect-ratio:4/5;border-radius:16px;border:1px dashed #667184;background:radial-gradient(circle at 35% 25%,#536070,#252b36 62%,#141821);display:flex;align-items:center;justify-content:center;text-align:center;padding:16px;color:#c7c3ba}
 .name{font-size:36px;margin:0 0 5px}.meta{color:var(--muted)}.smallstats{display:flex;flex-wrap:wrap;gap:10px;margin:14px 0}.pill{background:#10151c;border:1px solid var(--line);border-radius:999px;padding:8px 11px}.pill strong{color:var(--good)}
 .stats{display:grid;grid-template-columns:repeat(6,1fr);gap:8px}.stat{background:#10151c;border:1px solid var(--line);border-radius:12px;padding:10px;text-align:center}.stat b{display:block;color:var(--muted);font-size:12px}.stat span{font-size:23px;font-weight:800}
@@ -30,8 +31,9 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 .portrait img{width:100%;height:100%;object-fit:cover;border-radius:14px}#playerImage img{max-width:100vw;max-height:100vh;object-fit:contain}</style>
 </head>
 <body><div class="wrap">
-<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Fantasy NPC Generator – KI-Charaktere + 5e-Werte</div></div><div class="badge">v0.42</div></header>
+<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Fantasy NPC Generator – KI-Charaktere + 5e-Werte</div></div><div class="badge">v0.43</div></header>
 
+<div id="mainScreen">
 <div class="card">
 <div class="formgrid">
 <div><label>1–3 Stichworte</label><input id="keywords" value="alte Zwergin, Schmiedin, mürrisch"></div>
@@ -39,18 +41,8 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 <div><label>NPC-Typ</label><select id="role"><option>Normaler NPC</option><option>Wichtiger NPC</option><option>Gegner</option></select></div>
 <div><label>Geschlecht</label><select id="gender"><option>Zufällig</option><option>Weiblich</option><option>Männlich</option><option>Divers</option></select></div>
 </div>
-<div class="buttons"><button onclick="generateNPC()">✨ NPC generieren</button><button class="secondary" onclick="randomPrompt()">🎲 Stichworte</button><button class="secondary" onclick="clearAll()">Leeren</button></div>
+<div class="buttons"><button onclick="generateNPC()">✨ NPC generieren</button><button class="secondary" onclick="randomPrompt()">🎲 Stichworte</button><button class="secondary" onclick="clearAll()">Leeren</button><button class="secondary" onclick="showLibrary()">📚 Gespeicherte NSC</button></div>
 <div class="api"><b>KI aktiv:</b> Kreative Charaktertexte werden über GPT-5.6 Luna erzeugt. Regelwerte und Kampfwerte berechnet die App lokal. Portraits werden weiterhin nur auf Knopfdruck erzeugt.</div><div id="npcStatus" class="note" style="margin-top:10px"></div>
-</div>
-
-<div class="card">
-  <h2 style="margin-top:0">Meine NSC</h2>
-  <div class="searchbox">
-    <input id="npcSearch" placeholder="Suche nach Name, Ort, Beruf, Volk, Notiz oder bekanntem NSC ..." oninput="renderSavedNPCs()">
-    <button class="secondary" onclick="renderSavedNPCs()">🔎 Suchen</button>
-  </div>
-  <div id="npcList" class="npclist"></div>
-  <div class="note">Gespeicherte NSC bleiben in diesem Prototyp lokal in diesem Browser gespeichert.</div>
 </div>
 
 <div id="result" class="card result">
@@ -79,12 +71,28 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 <div><label>Bekannt mit NSC</label><input id="knownNPCs" placeholder="z. B. Hauptmann Arvik; Mira Feldhain"></div>
 </div>
 <div style="margin-top:12px"><label>Freie SL-Notizen</label><textarea id="gmNotes" placeholder="Begegnungen mit der Gruppe, Versprechen, offene Aufgaben, Änderungen am Charakter ..."></textarea></div>
-<div class="note">Diese Angaben sind reine SL-Informationen und erscheinen niemals in der Spieleransicht.</div></div><div class="buttons"><button class="secondary" onclick="saveNPC()">☆ NPC speichern</button><button class="secondary" onclick="generateNPC()">↻ Neu generieren</button><button class="secondary" onclick="generateImage()">🎨 Portrait generieren</button></div>
+<div class="note">Diese Angaben sind reine SL-Informationen und erscheinen niemals in der Spieleransicht.</div></div><div class="buttons"><button class="secondary" id="saveNpcButton" onclick="saveNPC()">☆ NPC speichern</button><button class="secondary" onclick="toggleEditMode()">✏ Bearbeiten</button><button class="secondary" onclick="generateNPC()">↻ Neu generieren</button><button class="secondary" onclick="generateImage()">🎨 Portrait generieren</button></div>
 <div id="saved" class="saved">✓ NPC lokal für diesen Prototyp gespeichert.</div><div id="imageStatus" class="note" style="margin-top:10px"></div>
 </div>
 </div>
+</div>
+
+<div id="libraryScreen" style="display:none">
+  <div class="card">
+    <div class="library-head"><div><h2 style="margin:0">📚 Gespeicherte NSC</h2><div class="note">Hier findest Du alle lokal gespeicherten NSC. Öffnen lädt genau diesen NSC samt zugehörigem Portrait und schaltet die Bearbeitung frei.</div></div><button class="secondary" onclick="showMainScreen()">← Zurück</button></div>
+    <div class="searchbox">
+      <input id="npcSearch" placeholder="Suche nach Name, Ort, Beruf, Volk, Notiz oder bekanntem NSC ..." oninput="renderSavedNPCs()">
+      <button class="secondary" onclick="renderSavedNPCs()">🔎 Suchen</button>
+    </div>
+    <div id="npcList" class="npclist"></div>
+  </div>
+</div>
 
 <script>
+let currentNpcId=null;
+let currentPortraitData=null;
+let editMode=false;
+
 const D={
 names:{zwerg:["Bromira Eisenhand","Dagna Kupferbart","Hilda Runenfaust","Brunna Erzgriff","Thorin Graufels","Marn Eisenkessel"],elf:["Lyriana Valeth","Serelis Vaelor","Aelwyn Farnblatt","Nerys Mondhain","Caelion Silberblatt","Mireth Morgenhain"],ork:["Grakka Eisenkinn","Rukha Aschfaust","Morga Rotzahn","Korga Schwarzfaust","Brakka Steinbrecher","Urga Graumond"],mensch:["Mira Feldhain","Talia Brenn","Sera Dorn","Harlan Voss","Edric Falk","Corvin Heller"],default:["Ravel Dorn","Sera Nachtwind","Corvin Falk","Mira Dornhain","Tarek Voss","Lysa Krähenfeder"]},
 appearance:["Ein wettergegerbtes Gesicht, kräftige Hände und Kleidung mit deutlichen Spuren jahrelanger Arbeit.","Auffällig helle Augen, ein schiefes Lächeln und eine alte Narbe direkt unter dem rechten Ohr.","Wirkt ungewöhnlich gepflegt; jedes Kleidungsstück sitzt ordentlich, obwohl die Ausrüstung sichtbar oft benutzt wurde.","Bewegt sich kontrolliert und fast lautlos. An einer Hand fehlt die Spitze des kleinen Fingers.","Das Haar ist streng zurückgebunden, die Stiefel mehrfach repariert und dennoch tadellos gepflegt.","Trägt eine alte Fibel, die nicht zum Rest der Kleidung passt und offensichtlich großen persönlichen Wert besitzt."],
@@ -173,6 +181,10 @@ async function generateNPC(){
     const special=role==="Gegner"?pick(["Einmal pro Runde 1W6 zusätzlicher Schaden.","Als Bonusaktion halbe Bewegung ohne Gelegenheitsangriffe.","Einmal pro kurze Rast Vorteil auf Angriffe.","Unter halben TP kurzzeitig +2 RK."]):pick(["Vorteil auf passende Berufsproben.","Kann lokale Gerüchte und Kontakte beschaffen.","Erkennt Unstimmigkeiten im eigenen Fachgebiet.","Kann über Kontakte einfache Hilfe organisieren."]);
     document.getElementById("combat").innerHTML=`<b>Angriffe pro Runde:</b> ${attacks}<br><br><b>Hauptwaffe – ${primary.weapon}</b> <span style="color:#aaa">(${primary.range})</span><br>Trefferbonus: ${primary.atk}<br>Schaden: ${primary.dmgDie} ${primary.dmgBonus} Schaden pro Treffer<br><br><b>Zweitwaffe – ${secondary.weapon}</b> <span style="color:#aaa">(${secondary.range})</span><br>Trefferbonus: ${secondary.atk}<br>Schaden: ${secondary.dmgDie} ${secondary.dmgBonus} Schaden pro Treffer<br><br><b>Besondere Fähigkeit:</b> ${special}`;
 
+    currentNpcId=null;
+    currentPortraitData=null;
+    setEditMode(false);
+    document.getElementById("saveNpcButton").textContent="☆ NPC speichern";
     document.getElementById("portraitBox").innerHTML='Noch kein Portrait.<br><br><b>Antippen für Spieleransicht</b>';
     document.getElementById("playerImage").innerHTML='<div id="playerPlaceholder">Noch kein Portrait vorhanden.<br><br><span style="font-size:14px;color:#aaa">Antippen zum Schließen</span></div>';
     document.getElementById("imageStatus").textContent="";
@@ -189,10 +201,48 @@ function clearAll(){document.getElementById("keywords").value="";document.getEle
 function getSavedNPCs(){
   try{return JSON.parse(localStorage.getItem("npcSchmiedeNPCs")||"[]")}catch(e){return[]}
 }
-function saveNPC(){
+function openPortraitDB(){
+  return new Promise((resolve,reject)=>{
+    const req=indexedDB.open("npcSchmiedePortraits",1);
+    req.onupgradeneeded=()=>{const db=req.result;if(!db.objectStoreNames.contains("portraits"))db.createObjectStore("portraits");};
+    req.onsuccess=()=>resolve(req.result); req.onerror=()=>reject(req.error);
+  });
+}
+async function savePortrait(id,data){
+  if(!data)return;
+  try{const db=await openPortraitDB();await new Promise((resolve,reject)=>{const tx=db.transaction("portraits","readwrite");tx.objectStore("portraits").put(data,String(id));tx.oncomplete=resolve;tx.onerror=()=>reject(tx.error);});db.close();}catch(e){console.warn("Portrait konnte nicht gespeichert werden",e);}
+}
+async function loadPortrait(id){
+  try{const db=await openPortraitDB();const data=await new Promise((resolve,reject)=>{const tx=db.transaction("portraits","readonly");const req=tx.objectStore("portraits").get(String(id));req.onsuccess=()=>resolve(req.result||null);req.onerror=()=>reject(req.error);});db.close();return data;}catch(e){return null;}
+}
+function resetPortrait(){
+  currentPortraitData=null;
+  document.getElementById("portraitBox").innerHTML='Noch kein Portrait.<br><br><b>Antippen für Spieleransicht</b>';
+  document.getElementById("playerImage").innerHTML='<div id="playerPlaceholder">Noch kein Portrait vorhanden.<br><br><span style="font-size:14px;color:#aaa">Antippen zum Schließen</span></div>';
+}
+function showLibrary(){
+  document.getElementById("mainScreen").style.display="none";
+  document.getElementById("libraryScreen").style.display="block";
+  renderSavedNPCs(); window.scrollTo({top:0,behavior:"smooth"});
+}
+function showMainScreen(){
+  document.getElementById("libraryScreen").style.display="none";
+  document.getElementById("mainScreen").style.display="block";
+  window.scrollTo({top:0,behavior:"smooth"});
+}
+function editableElements(){
+  return ["name","meta","appearance","clothing","personality","motivation","quirk","ibf","secret","skills","speech","combat"].map(id=>document.getElementById(id)).filter(Boolean);
+}
+function setEditMode(on){
+  editMode=!!on;
+  editableElements().forEach(el=>el.contentEditable=editMode?"true":"false");
+  document.getElementById("result")?.classList.toggle("editing",editMode);
+}
+function toggleEditMode(){setEditMode(!editMode);}
+async function saveNPC(){
   const stats=[...document.querySelectorAll("#stats .stat")].map(x=>x.innerText.replace(/\n/g," "));
   const npc={
-    id:Date.now(),
+    id:currentNpcId||Date.now(),
     name:document.getElementById("name").textContent,
     meta:document.getElementById("meta").textContent,
     ac:document.getElementById("ac").textContent,
@@ -214,9 +264,15 @@ function saveNPC(){
     knownNPCs:document.getElementById("knownNPCs").value,
     gmNotes:document.getElementById("gmNotes").value
   };
-  const list=getSavedNPCs(); list.unshift(npc);
+  const list=getSavedNPCs();
+  const idx=list.findIndex(x=>x.id===npc.id);
+  if(idx>=0) list[idx]=npc; else list.unshift(npc);
   localStorage.setItem("npcSchmiedeNPCs",JSON.stringify(list));
+  currentNpcId=npc.id;
+  if(currentPortraitData) await savePortrait(npc.id,currentPortraitData);
+  document.getElementById("saved").textContent=idx>=0?"✓ Änderungen gespeichert.":"✓ NPC gespeichert.";
   document.getElementById("saved").style.display="block";
+  document.getElementById("saveNpcButton").textContent="💾 Änderungen speichern";
   renderSavedNPCs();
 }
 function renderSavedNPCs(){
@@ -227,11 +283,12 @@ function renderSavedNPCs(){
   if(!list.length){box.innerHTML='<div class="note">Keine passenden gespeicherten NSC gefunden.</div>';return;}
   box.innerHTML=list.map(n=>`<div class="npcrow">
     <div><b>${n.name}</b><small>${n.meta}</small><small>${n.usedWhere ? "Eingesetzt: "+n.usedWhere : "Noch kein Einsatzort eingetragen"}</small></div>
-    <button class="secondary" onclick="loadNPC(${n.id})">Öffnen</button>
+    <button class="secondary" onclick="loadNPC(${n.id})">Öffnen & bearbeiten</button>
   </div>`).join("");
 }
-function loadNPC(id){
+async function loadNPC(id){
   const n=getSavedNPCs().find(x=>x.id===id); if(!n)return;
+  currentNpcId=n.id;
   document.getElementById("name").textContent=n.name; document.getElementById("meta").textContent=n.meta;
   document.getElementById("ac").textContent=n.ac; document.getElementById("hp").textContent=n.hp;
   document.getElementById("pb").textContent=n.pb; document.getElementById("init").textContent=n.init;
@@ -244,6 +301,19 @@ function loadNPC(id){
   document.getElementById("speech").textContent=n.speech||""; document.getElementById("combat").innerText=n.combat||"";
   document.getElementById("usedWhere").value=n.usedWhere||""; document.getElementById("knownNPCs").value=n.knownNPCs||"";
   document.getElementById("gmNotes").value=n.gmNotes||"";
+  const image=await loadPortrait(n.id);
+  if(image){
+    currentPortraitData=image;
+    document.getElementById("portraitBox").innerHTML=`<img src="${image}" alt="NSC Portrait">`;
+    document.getElementById("playerImage").innerHTML=`<img src="${image}" alt="Spieleransicht">`;
+  }else{
+    resetPortrait();
+  }
+  document.getElementById("imageStatus").textContent=image?"✓ Gespeichertes Portrait geladen.":"Für diesen gespeicherten NSC ist noch kein Portrait hinterlegt.";
+  document.getElementById("saved").style.display="none";
+  document.getElementById("saveNpcButton").textContent="💾 Änderungen speichern";
+  setEditMode(true);
+  showMainScreen();
   document.getElementById("result").style.display="block";
   document.getElementById("result").scrollIntoView({behavior:"smooth"});
 }
@@ -263,6 +333,7 @@ async function generateImage(){
     const res=await fetch('/api/generate-image',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify(payload)});
     const data=await res.json();
     if(!res.ok) throw new Error(data.error||'Bildgenerierung fehlgeschlagen');
+    currentPortraitData=data.image;
     document.getElementById("portraitBox").innerHTML=`<img src="${data.image}" alt="NSC Portrait">`;
     document.getElementById("playerImage").innerHTML=`<img src="${data.image}" alt="Spieleransicht">`;
     status.textContent="✓ Portrait erzeugt. Antippen zeigt nur das Bild.";

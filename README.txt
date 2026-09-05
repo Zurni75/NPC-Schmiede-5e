@@ -9,3 +9,6 @@ Neu:
 
 Vercel:
 OPENAI_API_KEY muss als Environment Variable gesetzt sein.
+
+
+v0.43: Gespeicherte NSC auf eigener Ansicht, Bearbeiten/Aktualisieren, Portrait-Zuordnung via IndexedDB korrigiert.
