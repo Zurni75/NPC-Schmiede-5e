@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NPC-Schmiede v0.46.1</title>
+<title>NPC-Schmiede v0.47.1</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -32,15 +32,15 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body><div class="wrap">
-<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Systemübergreifender NPC-Generator – KI-Charaktere + feste Regelprofile</div></div><div class="badge">v0.47</div></header>
+<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Systemübergreifender NPC-Generator – KI-Charaktere + feste Regelprofile</div></div><div class="badge">v0.47.1</div></header>
 
 <div id="mainScreen">
 <div class="card">
 <div class="formgrid">
 <div><label>1–3 Stichworte</label><input id="keywords" value="alte Zwergin, Schmiedin, mürrisch"></div>
-<div><label>Regelsystem</label><select id="system"><option value="5e">5e</option><option value="d20">D20</option><option value="d10">D10</option><option value="d6">D6</option></select></div>
+<div><label>Regelsystem</label><select id="system" onchange="updateLevelLabel()"><option value="5e">5e</option><option value="d6">D6 (OpenD6-basiert)</option><option value="d10">D10 (NPC-Schmiede)</option></select></div>
 <div><label>Setting / Welt / Epoche</label><input id="setting" value="Fantasy-Mittelalter" placeholder="z. B. USA 1920, London 1880, Cyberpunk 2090"></div>
-<div><label>Level</label><select id="level"><option value="random">Zufällig</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option></select></div>
+<div><label id="levelLabel">Level</label><select id="level"><option value="random">Zufällig</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option></select></div>
 <div><label>NPC-Typ</label><select id="role"><option>Normaler NPC</option><option>Wichtiger NPC</option><option>Gegner</option></select></div>
 <div><label>Geschlecht</label><select id="gender"><option>Zufällig</option><option>Weiblich</option><option>Männlich</option><option>Divers</option></select></div>
 </div>
@@ -180,13 +180,18 @@ async function generateNPC(){
   }catch(err){status.textContent="Fehler bei der KI-Generierung: "+err.message;}
   finally{if(button)button.disabled=false;}
 }
-function systemLabel(s){return ({"5e":"5e","d20":"D20","d10":"D10","d6":"D6"})[s]||"5e";}
-function buildMechanics(system,level,role,npc){
-  if(system==="d10")return buildPoolMechanics(10,level,role,npc);
-  if(system==="d6")return buildPoolMechanics(6,level,role,npc);
-  return buildD20Mechanics(system,level,role,npc);
+function systemLabel(s){return ({"5e":"5e","d10":"D10","d6":"D6"})[s]||"5e";}
+function updateLevelLabel(){
+  const s=document.getElementById("system")?.value||"5e";
+  const l=document.getElementById("levelLabel");
+  if(l)l.textContent=s==="5e"?"Level":"Erfahrungsstufe";
 }
-function buildD20Mechanics(system,level,role,npc){
+function buildMechanics(system,level,role,npc){
+  if(system==="d10")return buildD10Mechanics(level,role,npc);
+  if(system==="d6")return buildD6Mechanics(level,role,npc);
+  return build5eMechanics(level,role,npc);
+}
+function build5eMechanics(level,role,npc){
   const vals=[8,10,11,12,13,14,15,16,17,18].sort(()=>Math.random()-.5).slice(0,6), dex=vals[1],con=vals[2];
   const pb=2+Math.floor((level-1)/4), ac=10+Math.max(0,mod(dex))+Math.floor(level/6)+(role==="Gegner"?2:0);
   const hp=Math.max(6,8+level*(4+Math.max(0,mod(con)))+(role==="Gegner"?level*3:0));
@@ -199,20 +204,43 @@ function buildD20Mechanics(system,level,role,npc){
   const q=ws(pick(["Langbogen","Armbrust","Speer","Dolch"].filter(w=>w!==p.w)));
   let attacks=1;if(level>=5)attacks=2;if(level>=11&&role==="Gegner")attacks=3;if(level>=17&&role==="Gegner")attacks=4;
   const special=role==="Gegner"?pick(["Einmal pro Runde 1W6 zusätzlicher Schaden.","Als Bonusaktion halbe Bewegung ohne Gelegenheitsangriffe.","Einmal pro kurze Rast Vorteil auf einen Angriff.","Unter halben TP kurzzeitig +2 Verteidigung."]):pick(["Vorteil auf passende Berufsproben.","Kann lokale Gerüchte und Kontakte beschaffen.","Erkennt Unstimmigkeiten im eigenen Fachgebiet.","Kann über Kontakte einfache Hilfe organisieren."]);
-  return {levelText:`Level ${level}`,labels:["RK","TP",system==="5e"?"ÜB":"Bonus","Initiative"],summary:[ac,hp,"+"+pb,fmt(mod(dex))],stats:labs.map((x,i)=>({label:x,value:vals[i],extra:fmt(mod(vals[i]))})),skills,combat:`<b>Angriffe pro Runde:</b> ${attacks}<br><br><b>Hauptwaffe – ${p.w}</b> <span style="color:#aaa">(${p.r})</span><br>Trefferbonus: ${p.atk}<br>Schaden: ${p.die} ${fmt(p.m)} Schaden pro Treffer<br><br><b>Zweitwaffe – ${q.w}</b> <span style="color:#aaa">(${q.r})</span><br>Trefferbonus: ${q.atk}<br>Schaden: ${q.die} ${fmt(q.m)} Schaden pro Treffer<br><br><b>Besondere Fähigkeit:</b> ${special}`};
+  return {levelText:`Level ${level}`,labels:["RK","TP","ÜB","Initiative"],summary:[ac,hp,"+"+pb,fmt(mod(dex))],stats:labs.map((x,i)=>({label:x,value:vals[i],extra:fmt(mod(vals[i]))})),skills,combat:`<b>Angriffe pro Runde:</b> ${attacks}<br><br><b>Hauptwaffe – ${p.w}</b> <span style="color:#aaa">(${p.r})</span><br>Trefferbonus: ${p.atk}<br>Schaden: ${p.die} ${fmt(p.m)} Schaden pro Treffer<br><br><b>Zweitwaffe – ${q.w}</b> <span style="color:#aaa">(${q.r})</span><br>Trefferbonus: ${q.atk}<br>Schaden: ${q.die} ${fmt(q.m)} Schaden pro Treffer<br><br><b>Besondere Fähigkeit:</b> ${special}`};
 }
-function buildPoolMechanics(die,level,role,npc){
-  const tier=Math.max(1,Math.min(5,1+Math.floor((level-1)/4)));
-  const vals=[1,2,2,3,3,4,4,5].sort(()=>Math.random()-.5).slice(0,5).map(v=>Math.min(5,v+(role==="Gegner"&&Math.random()<.35?1:0)));
-  const labs=["KÖR","GES","VER","WAH","PRÄ"], bonus=Math.max(0,tier-1), defense=2+vals[1]+bonus, stamina=5+vals[0]+tier+(role==="Gegner"?2:0);
-  const poolWord=`W${die}`;
-  const skills=(npc.skills||[]).slice(0,4).map((skill,i)=>`${skill}: ${Math.min(8,vals[i%5]+tier)}${poolWord}`).join("<br>");
-  const attackPool=Math.min(10,vals[1]+tier+(role==="Gegner"?1:0));
-  const socialPool=Math.min(10,vals[4]+tier);
-  const special=role==="Gegner"?`Einmal pro Szene +2${poolWord} auf eine passende Aktion.`:`Einmal pro Szene +1${poolWord} auf eine passende Berufs- oder Kontaktprobe.`;
-  return {levelText:`Erfahrungsstufe ${level}`,labels:["Abwehr","Ausdauer","Stufe","Initiative"],summary:[defense,stamina,tier,`${vals[1]+tier}${poolWord}`],stats:labs.map((x,i)=>({label:x,value:vals[i],extra:`${vals[i]+tier}${poolWord} Pool`})),skills,combat:`<b>Regelprofil:</b> ${poolWord}-Würfelpool<br><br><b>Körperlicher Angriff:</b> ${attackPool}${poolWord}<br><b>Soziale/mentale Aktion:</b> ${socialPool}${poolWord}<br><b>Abwehr:</b> ${defense}<br><b>Ausdauer:</b> ${stamina}<br><br><b>Besondere Fähigkeit:</b> ${special}<br><br><span style="color:#aaa">Hinweis: D${die} ist ein neutrales NPC-Schmiede-Regelprofil und kein Nachbau eines bestimmten kommerziellen Regelwerks.</span>`};
+function pipText(pips){
+  const total=Math.max(3,Math.round(pips)), dice=Math.floor(total/3), rem=total%3;
+  return `${dice}D${rem?`+${rem}`:""}`;
 }
-
+function d6Tier(level){return level<=4?0:level<=8?1:level<=12?2:level<=16?3:4;}
+function buildD6Mechanics(level,role,npc){
+  const tier=d6Tier(level), important=role!=="Normaler NPC"?1:0;
+  const labs=["GES","WIS","WAH","STÄ","TEC","MEC"];
+  let base=[7,7,7,7,6,6];
+  for(let i=0;i<tier;i++)base[(i*2+Math.floor(Math.random()*base.length))%base.length]++;
+  base=base.sort(()=>Math.random()-.5);
+  if(role==="Gegner")base[0]++;
+  const skillNames=(npc.skills||[]).slice(0,4);
+  const skillVals=skillNames.map((skill,i)=>Math.min(22,base[i%6]+2+tier+important+(i===0?1:0)));
+  const skills=skillNames.map((skill,i)=>`${skill}: <b>${pipText(skillVals[i])}</b>`).join("<br>");
+  const attack=Math.max(...skillVals.slice(0,2));
+  const resist=base[3]+(role==="Gegner"?2:0);
+  const init=base[2]+tier;
+  const special=role==="Gegner"?"Einmal pro Szene darf der NSC einen passenden Fertigkeitswurf um +1D erhöhen.":"Einmal pro Szene darf der NSC eine passende Berufs- oder Kontaktprobe um +1D erhöhen.";
+  return {levelText:`Erfahrungsstufe ${level}`,labels:["Widerstand","Wunden","Kompetenz","Initiative"],summary:[pipText(resist),"Wundstufen",["Anfänger","Erfahren","Profi","Elite","Meister"][tier],pipText(init)],stats:labs.map((x,i)=>({label:x,value:pipText(base[i]),extra:"Grundattribut"})),skills,combat:`<b>D6-Regelprofil:</b> OpenD6-basiert<br><br><b>Typischer Angriff / Hauptaktion:</b> ${pipText(attack)}<br><b>Schadenswiderstand:</b> ${pipText(resist)}<br><b>Wunden:</b> Betäubt → Verwundet → Schwer verwundet → Außer Gefecht<br><br><b>Besondere Fähigkeit:</b> ${special}<br><br><span style="color:#aaa">Werte werden als Würfel und Pips dargestellt: 2D → 2D+1 → 2D+2 → 3D. Die Erfahrungsstufe 1–20 ist eine NPC-Schmiede-Hilfe zur Einordnung der Kompetenz und kein OpenD6-Level.</span>`};
+}
+function d10Tier(level){return level<=4?0:level<=8?1:level<=12?2:level<=16?3:4;}
+function buildD10Mechanics(level,role,npc){
+  const tier=d10Tier(level), labs=["KÖR","GES","VER","WAH","PRÄ","WIL"];
+  let vals=[2,2,2,3,3,3].sort(()=>Math.random()-.5);
+  for(let i=0;i<tier;i++)vals[(i+Math.floor(Math.random()*6))%6]=Math.min(5,vals[(i+Math.floor(Math.random()*6))%6]+1);
+  if(role==="Wichtiger NPC"||role==="Gegner")vals[Math.floor(Math.random()*6)]=Math.min(5,Math.max(4,vals[Math.floor(Math.random()*6)]||3));
+  const skillNames=(npc.skills||[]).slice(0,4);
+  const skillRanks=skillNames.map((_,i)=>Math.min(5,1+tier+(i<2?1:0)+(role==="Wichtiger NPC"&&i===0?1:0)));
+  const skills=skillNames.map((skill,i)=>{const a=vals[i%6],r=skillRanks[i],pool=a+r;return `${skill}: <b>${r}</b> (${pool}W10)`;}).join("<br>");
+  const attack=Math.min(10,vals[1]+skillRanks[0]+(role==="Gegner"?1:0));
+  const defense=1+Math.floor((vals[1]+vals[3])/2)+(role==="Gegner"?1:0), wounds=3+vals[0]+vals[5];
+  const special=role==="Gegner"?"Einmal pro Szene +2W10 auf eine passende Aktion.":"Einmal pro Szene +1W10 auf eine passende Berufs- oder Kontaktprobe.";
+  return {levelText:`Erfahrungsstufe ${level}`,labels:["Abwehr","Ausdauer","Kompetenz","Initiative"],summary:[defense,wounds,["Anfänger","Erfahren","Profi","Elite","Meister"][tier],`${vals[1]+vals[3]}W10`],stats:labs.map((x,i)=>({label:x,value:vals[i],extra:"1–5"})),skills,combat:`<b>D10-Regelprofil:</b> NPC-Schmiede Würfelpool<br><br><b>Probe:</b> Attribut + Fertigkeit = Anzahl W10<br><b>7–9:</b> 1 Erfolg &nbsp; · &nbsp; <b>10:</b> 2 Erfolge<br><b>Schwierigkeit:</b> 1 einfach · 2 normal · 3 schwierig · 4 sehr schwierig · 5 außergewöhnlich<br><br><b>Typischer Angriff / Hauptaktion:</b> ${attack}W10<br><b>Abwehr:</b> ${defense}<br><b>Ausdauer:</b> ${wounds}<br><br><b>Besondere Fähigkeit:</b> ${special}<br><br><span style="color:#aaa">Dieses D10-Profil ist ein eigenes universelles Regelprofil der NPC-Schmiede.</span>`};
+}
 async function initGoogleDrive(){
   try{
     const r=await fetch('/api/google-config'); const cfg=await r.json();
@@ -476,10 +504,10 @@ async function loadNPC(id){
   if(!n){currentPortraitDriveFileId=null;n=getSavedNPCs().find(x=>String(x.id)===String(id)); if(n)image=await loadPortrait(n.id);}
   if(!n)return;
   currentNpcId=n.id;
-  document.getElementById("system").value=n.system||"5e"; document.getElementById("setting").value=n.setting||"Fantasy-Mittelalter";
+  document.getElementById("system").value=(n.system==="d20"?"5e":(n.system||"5e")); document.getElementById("setting").value=n.setting||"Fantasy-Mittelalter";
   document.getElementById("name").textContent=n.name; document.getElementById("meta").textContent=n.meta;
   document.getElementById("ac").textContent=n.ac; document.getElementById("hp").textContent=n.hp; document.getElementById("pb").textContent=n.pb; document.getElementById("init").textContent=n.init;
-  const poolSystem=(n.system==="d10"||n.system==="d6");document.getElementById("acLabel").textContent=poolSystem?"Abwehr":"RK";document.getElementById("hpLabel").textContent=poolSystem?"Ausdauer":"TP";document.getElementById("pbLabel").textContent=poolSystem?"Stufe":(n.system==="d20"?"Bonus":"ÜB");document.getElementById("initLabel").textContent="Initiative";
+  const poolSystem=(n.system==="d10"||n.system==="d6");document.getElementById("acLabel").textContent=n.system==="d6"?"Widerstand":(poolSystem?"Abwehr":"RK");document.getElementById("hpLabel").textContent=n.system==="d6"?"Wunden":(poolSystem?"Ausdauer":"TP");document.getElementById("pbLabel").textContent=poolSystem?"Kompetenz":"ÜB";document.getElementById("initLabel").textContent="Initiative";updateLevelLabel();
   document.getElementById("stats").innerHTML=(n.stats||[]).map(v=>{const parts=String(v).split(" ");return `<div class="stat"><b>${parts[0]||""}</b><span>${parts[1]||""}</span><div>${parts.slice(2).join(" ")}</div></div>`;}).join("");
   document.getElementById("appearance").textContent=n.appearance||"";document.getElementById("clothing").textContent=n.clothing||"";document.getElementById("personality").textContent=n.personality||"";document.getElementById("motivation").textContent=n.motivation||"";
   document.getElementById("quirk").textContent=n.quirk||"";document.getElementById("ibf").innerText=n.ibf||"";document.getElementById("secret").textContent=n.secret||"";document.getElementById("skills").innerText=n.skills||"";
