@@ -32,25 +32,27 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body><div class="wrap">
-<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Fantasy NPC Generator – KI-Charaktere + 5e-Werte</div></div><div class="badge">v0.46.1</div></header>
+<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Systemübergreifender NPC-Generator – KI-Charaktere + feste Regelprofile</div></div><div class="badge">v0.47</div></header>
 
 <div id="mainScreen">
 <div class="card">
 <div class="formgrid">
 <div><label>1–3 Stichworte</label><input id="keywords" value="alte Zwergin, Schmiedin, mürrisch"></div>
+<div><label>Regelsystem</label><select id="system"><option value="5e">5e</option><option value="d20">D20</option><option value="d10">D10</option><option value="d6">D6</option></select></div>
+<div><label>Setting / Welt / Epoche</label><input id="setting" value="Fantasy-Mittelalter" placeholder="z. B. USA 1920, London 1880, Cyberpunk 2090"></div>
 <div><label>Level</label><select id="level"><option value="random">Zufällig</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option></select></div>
 <div><label>NPC-Typ</label><select id="role"><option>Normaler NPC</option><option>Wichtiger NPC</option><option>Gegner</option></select></div>
 <div><label>Geschlecht</label><select id="gender"><option>Zufällig</option><option>Weiblich</option><option>Männlich</option><option>Divers</option></select></div>
 </div>
 <div class="buttons"><button onclick="generateNPC()">✨ NPC generieren</button><button class="secondary" onclick="randomPrompt()">🎲 Stichworte</button><button class="secondary" onclick="clearAll()">Leeren</button><button class="secondary" onclick="showLibrary()">📚 Gespeicherte NSC <span id="savedCount"></span></button></div>
-<div class="api"><b>KI aktiv:</b> Kreative Charaktertexte werden über GPT-5.6 Luna erzeugt. Regelwerte und Kampfwerte berechnet die App lokal. Portraits werden weiterhin nur auf Knopfdruck erzeugt.<br><b>☁ Synchronisierung:</b> NSC-Daten liegen in Deiner privaten Cloud; Portraits können in Deinem Google Drive gespeichert werden.</div><div class="buttons" style="margin-top:10px"><button class="secondary" id="googleDriveButton" onclick="connectGoogleDrive()">🔗 Google Drive verbinden</button></div><div id="driveStatus" class="note" style="margin-top:8px">Google Drive noch nicht verbunden.</div><div id="syncStatus" class="note" style="margin-top:8px"></div><div id="npcStatus" class="note" style="margin-top:10px"></div>
+<div class="api"><b>KI aktiv:</b> Kreative Charaktertexte werden über GPT-5.6 Luna passend zum frei eingegebenen Setting erzeugt. Regelwerte und Kampfwerte berechnet die App lokal nach dem gewählten Regelprofil. Portraits werden weiterhin nur auf Knopfdruck erzeugt.<br><b>☁ Synchronisierung:</b> NSC-Daten liegen in Deiner privaten Cloud; Portraits können in Deinem Google Drive gespeichert werden.</div><div class="buttons" style="margin-top:10px"><button class="secondary" id="googleDriveButton" onclick="connectGoogleDrive()">🔗 Google Drive verbinden</button></div><div id="driveStatus" class="note" style="margin-top:8px">Google Drive noch nicht verbunden.</div><div id="syncStatus" class="note" style="margin-top:8px"></div><div id="npcStatus" class="note" style="margin-top:10px"></div>
 </div>
 
 <div id="result" class="card result">
 <div class="hero">
 <div class="portrait" id="portraitBox" onclick="openPlayerView()" style="cursor:pointer">Noch kein Portrait.<br><br><b>Antippen für Spieleransicht</b></div>
 <div><h2 class="name" id="name"></h2><div class="meta" id="meta"></div>
-<div class="smallstats"><div class="pill">RK <strong id="ac"></strong></div><div class="pill">TP <strong id="hp"></strong></div><div class="pill">ÜB <strong id="pb"></strong></div><div class="pill">Initiative <strong id="init"></strong></div></div>
+<div class="smallstats"><div class="pill"><span id="acLabel">RK</span> <strong id="ac"></strong></div><div class="pill"><span id="hpLabel">TP</span> <strong id="hp"></strong></div><div class="pill"><span id="pbLabel">ÜB</span> <strong id="pb"></strong></div><div class="pill"><span id="initLabel">Initiative</span> <strong id="init"></strong></div></div>
 <div id="stats" class="stats"></div></div>
 </div>
 
@@ -129,30 +131,31 @@ async function generateNPC(){
   const button=document.querySelector('button[onclick="generateNPC()"]');
   const keywords=document.getElementById("keywords").value.trim();
   if(!keywords){status.textContent="Bitte zuerst 1–3 Stichworte eingeben.";return;}
+  const system=document.getElementById("system").value;
+  const setting=document.getElementById("setting").value.trim()||"Fantasy-Mittelalter";
   const role=document.getElementById("role").value;
   const gender=document.getElementById("gender").value;
   const lv=document.getElementById("level").value;
   const level=lv==="random"?1+Math.floor(Math.random()*12):parseInt(lv);
-  const pb=2+Math.floor((level-1)/4);
 
   status.textContent="✨ Charakter wird von der KI ausgearbeitet …";
   if(button)button.disabled=true;
   try{
     const res=await fetch('/api/generate-npc',{
       method:'POST',headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({keywords,level,role,gender,recent:getRecentCreative()})
+      body:JSON.stringify({keywords,level,role,gender,system,setting,recent:getRecentCreative()})
     });
     const npc=await res.json();
     if(!res.ok) throw new Error(npc.error||'KI-Generierung fehlgeschlagen');
-
-    const vals=[8,10,11,12,13,14,15,16,17,18].sort(()=>Math.random()-.5).slice(0,6), dex=vals[1],con=vals[2];
-    const ac=10+Math.max(0,mod(dex))+Math.floor(level/6)+(role==="Gegner"?2:0);
-    const hp=Math.max(6,8+level*(4+Math.max(0,mod(con)))+(role==="Gegner"?level*3:0));
+    const mech=buildMechanics(system,level,role,npc);
 
     document.getElementById("name").textContent=npc.name;
-    document.getElementById("meta").textContent=`${npc.race} · ${npc.profession} · Level ${level} · ${npc.age} Jahre · ${npc.gender}`;
-    document.getElementById("ac").textContent=ac;document.getElementById("hp").textContent=hp;document.getElementById("pb").textContent="+"+pb;document.getElementById("init").textContent=fmt(mod(dex));
-    const labs=["STÄ","GES","KON","INT","WEI","CHA"];document.getElementById("stats").innerHTML=labs.map((x,i)=>`<div class="stat"><b>${x}</b><span>${vals[i]}</span><div>${fmt(mod(vals[i]))}</div></div>`).join("");
+    document.getElementById("meta").textContent=`${npc.race} · ${npc.profession} · ${mech.levelText} · ${npc.age} Jahre · ${npc.gender} · ${systemLabel(system)} · ${setting}`;
+    document.getElementById("acLabel").textContent=mech.labels[0];document.getElementById("ac").textContent=mech.summary[0];
+    document.getElementById("hpLabel").textContent=mech.labels[1];document.getElementById("hp").textContent=mech.summary[1];
+    document.getElementById("pbLabel").textContent=mech.labels[2];document.getElementById("pb").textContent=mech.summary[2];
+    document.getElementById("initLabel").textContent=mech.labels[3];document.getElementById("init").textContent=mech.summary[3];
+    document.getElementById("stats").innerHTML=mech.stats.map(x=>`<div class="stat"><b>${x.label}</b><span>${x.value}</span><div>${x.extra||""}</div></div>`).join("");
 
     document.getElementById("appearance").textContent=npc.appearance;
     document.getElementById("clothing").textContent=npc.clothing;
@@ -162,46 +165,52 @@ async function generateNPC(){
     document.getElementById("secret").textContent=npc.secret;
     document.getElementById("speech").textContent=npc.speech;
     document.getElementById("ibf").innerHTML=`<div>Ideal</div><div>${npc.ideal}</div><div>Bindung</div><div>${npc.bond}</div><div>Makel</div><div>${npc.flaw}</div>`;
+    document.getElementById("skills").innerHTML=mech.skills;
+    document.getElementById("combat").innerHTML=mech.combat;
 
-    const ss=(npc.skills||[]).slice(0,4);
-    document.getElementById("skills").innerHTML=ss.map(skill=>{
-      const idx=skillAbility[skill] ?? 4;
-      return `${skill} ${fmt(pb+Math.max(0,mod(vals[idx])))}`;
-    }).join("<br>");
-
-    const strMod=mod(vals[0]), dexMod=mod(vals[1]), finesse=Math.max(strMod,dexMod);
-    function weaponStats(weapon){
-      let dmgDie="1W8", dmgMod=strMod, atkMod=strMod, range="Nahkampf";
-      if(weapon==="Streitaxt"||weapon==="Kriegshammer"||weapon==="Langschwert"){dmgDie="1W8";dmgMod=strMod;atkMod=strMod;}
-      if(weapon==="Kurzschwert"){dmgDie="1W6";dmgMod=finesse;atkMod=finesse;}
-      if(weapon==="Speer"){dmgDie="1W6";dmgMod=strMod;atkMod=strMod;range="Nahkampf / Wurf";}
-      if(weapon==="Dolch"){dmgDie="1W4";dmgMod=finesse;atkMod=finesse;range="Nahkampf / Wurf";}
-      if(weapon==="Langbogen"){dmgDie="1W8";dmgMod=dexMod;atkMod=dexMod;range="Fernkampf";}
-      if(weapon==="Armbrust"){dmgDie="1W8";dmgMod=dexMod;atkMod=dexMod;range="Fernkampf";}
-      return {weapon,dmgDie,dmgMod,atkMod,range,atk:fmt(pb+atkMod),dmgBonus:fmt(dmgMod)};
-    }
-    const meleePool=["Langschwert","Streitaxt","Kriegshammer","Kurzschwert","Speer","Dolch"];
-    const rangedPool=["Langbogen","Armbrust","Speer","Dolch"];
-    const primary=weaponStats(pick(meleePool));
-    const secondary=weaponStats(pick(rangedPool.filter(w=>w!==primary.weapon)));
-    let attacks=1;if(level>=5)attacks=2;if(level>=11&&role==="Gegner")attacks=3;if(level>=17&&role==="Gegner")attacks=4;
-    const special=role==="Gegner"?pick(["Einmal pro Runde 1W6 zusätzlicher Schaden.","Als Bonusaktion halbe Bewegung ohne Gelegenheitsangriffe.","Einmal pro kurze Rast Vorteil auf Angriffe.","Unter halben TP kurzzeitig +2 RK."]):pick(["Vorteil auf passende Berufsproben.","Kann lokale Gerüchte und Kontakte beschaffen.","Erkennt Unstimmigkeiten im eigenen Fachgebiet.","Kann über Kontakte einfache Hilfe organisieren."]);
-    document.getElementById("combat").innerHTML=`<b>Angriffe pro Runde:</b> ${attacks}<br><br><b>Hauptwaffe – ${primary.weapon}</b> <span style="color:#aaa">(${primary.range})</span><br>Trefferbonus: ${primary.atk}<br>Schaden: ${primary.dmgDie} ${primary.dmgBonus} Schaden pro Treffer<br><br><b>Zweitwaffe – ${secondary.weapon}</b> <span style="color:#aaa">(${secondary.range})</span><br>Trefferbonus: ${secondary.atk}<br>Schaden: ${secondary.dmgDie} ${secondary.dmgBonus} Schaden pro Treffer<br><br><b>Besondere Fähigkeit:</b> ${special}`;
-
-    currentNpcId=null;
-    currentPortraitData=null;
+    currentNpcId=null; currentPortraitData=null; currentPortraitDriveFileId=null;
     setEditMode(false);
     document.getElementById("saveNpcButton").textContent="☆ NPC speichern";
-    document.getElementById("portraitBox").innerHTML='Noch kein Portrait.<br><br><b>Antippen für Spieleransicht</b>';
-    document.getElementById("playerImage").innerHTML='<div id="playerPlaceholder">Noch kein Portrait vorhanden.<br><br><span style="font-size:14px;color:#aaa">Antippen zum Schließen</span></div>';
+    resetPortrait();
     document.getElementById("imageStatus").textContent="";
     document.getElementById("result").style.display="block";document.getElementById("saved").style.display="none";
     rememberCreative(npc);
-    status.textContent="✓ Neuer KI-Charakter erzeugt. Eigenart, Geheimnis und Sprechweise werden mit den letzten NSC abgeglichen.";
+    status.textContent=`✓ Neuer ${systemLabel(system)}-Charakter für „${setting}“ erzeugt.`;
     document.getElementById("result").scrollIntoView({behavior:"smooth"});
-  }catch(err){
-    status.textContent="Fehler bei der KI-Generierung: "+err.message;
-  }finally{if(button)button.disabled=false;}
+  }catch(err){status.textContent="Fehler bei der KI-Generierung: "+err.message;}
+  finally{if(button)button.disabled=false;}
+}
+function systemLabel(s){return ({"5e":"5e","d20":"D20","d10":"D10","d6":"D6"})[s]||"5e";}
+function buildMechanics(system,level,role,npc){
+  if(system==="d10")return buildPoolMechanics(10,level,role,npc);
+  if(system==="d6")return buildPoolMechanics(6,level,role,npc);
+  return buildD20Mechanics(system,level,role,npc);
+}
+function buildD20Mechanics(system,level,role,npc){
+  const vals=[8,10,11,12,13,14,15,16,17,18].sort(()=>Math.random()-.5).slice(0,6), dex=vals[1],con=vals[2];
+  const pb=2+Math.floor((level-1)/4), ac=10+Math.max(0,mod(dex))+Math.floor(level/6)+(role==="Gegner"?2:0);
+  const hp=Math.max(6,8+level*(4+Math.max(0,mod(con)))+(role==="Gegner"?level*3:0));
+  const labs=["STÄ","GES","KON","INT","WEI","CHA"];
+  const ss=(npc.skills||[]).slice(0,4);
+  const skills=ss.map(skill=>{const idx=skillAbility[skill]??4;return `${skill} ${fmt(pb+Math.max(0,mod(vals[idx])))}`;}).join("<br>");
+  const strMod=mod(vals[0]),dexMod=mod(vals[1]),finesse=Math.max(strMod,dexMod);
+  function ws(w){let die="1W8",m=strMod,r="Nahkampf";if(w==="Kurzschwert"){die="1W6";m=finesse}if(w==="Speer"){die="1W6";r="Nahkampf / Wurf"}if(w==="Dolch"){die="1W4";m=finesse;r="Nahkampf / Wurf"}if(w==="Langbogen"||w==="Armbrust"){die="1W8";m=dexMod;r="Fernkampf"}return {w,die,m,r,atk:fmt(pb+m)};}
+  const p=ws(pick(["Langschwert","Streitaxt","Kriegshammer","Kurzschwert","Speer","Dolch"]));
+  const q=ws(pick(["Langbogen","Armbrust","Speer","Dolch"].filter(w=>w!==p.w)));
+  let attacks=1;if(level>=5)attacks=2;if(level>=11&&role==="Gegner")attacks=3;if(level>=17&&role==="Gegner")attacks=4;
+  const special=role==="Gegner"?pick(["Einmal pro Runde 1W6 zusätzlicher Schaden.","Als Bonusaktion halbe Bewegung ohne Gelegenheitsangriffe.","Einmal pro kurze Rast Vorteil auf einen Angriff.","Unter halben TP kurzzeitig +2 Verteidigung."]):pick(["Vorteil auf passende Berufsproben.","Kann lokale Gerüchte und Kontakte beschaffen.","Erkennt Unstimmigkeiten im eigenen Fachgebiet.","Kann über Kontakte einfache Hilfe organisieren."]);
+  return {levelText:`Level ${level}`,labels:["RK","TP",system==="5e"?"ÜB":"Bonus","Initiative"],summary:[ac,hp,"+"+pb,fmt(mod(dex))],stats:labs.map((x,i)=>({label:x,value:vals[i],extra:fmt(mod(vals[i]))})),skills,combat:`<b>Angriffe pro Runde:</b> ${attacks}<br><br><b>Hauptwaffe – ${p.w}</b> <span style="color:#aaa">(${p.r})</span><br>Trefferbonus: ${p.atk}<br>Schaden: ${p.die} ${fmt(p.m)} Schaden pro Treffer<br><br><b>Zweitwaffe – ${q.w}</b> <span style="color:#aaa">(${q.r})</span><br>Trefferbonus: ${q.atk}<br>Schaden: ${q.die} ${fmt(q.m)} Schaden pro Treffer<br><br><b>Besondere Fähigkeit:</b> ${special}`};
+}
+function buildPoolMechanics(die,level,role,npc){
+  const tier=Math.max(1,Math.min(5,1+Math.floor((level-1)/4)));
+  const vals=[1,2,2,3,3,4,4,5].sort(()=>Math.random()-.5).slice(0,5).map(v=>Math.min(5,v+(role==="Gegner"&&Math.random()<.35?1:0)));
+  const labs=["KÖR","GES","VER","WAH","PRÄ"], bonus=Math.max(0,tier-1), defense=2+vals[1]+bonus, stamina=5+vals[0]+tier+(role==="Gegner"?2:0);
+  const poolWord=`W${die}`;
+  const skills=(npc.skills||[]).slice(0,4).map((skill,i)=>`${skill}: ${Math.min(8,vals[i%5]+tier)}${poolWord}`).join("<br>");
+  const attackPool=Math.min(10,vals[1]+tier+(role==="Gegner"?1:0));
+  const socialPool=Math.min(10,vals[4]+tier);
+  const special=role==="Gegner"?`Einmal pro Szene +2${poolWord} auf eine passende Aktion.`:`Einmal pro Szene +1${poolWord} auf eine passende Berufs- oder Kontaktprobe.`;
+  return {levelText:`Erfahrungsstufe ${level}`,labels:["Abwehr","Ausdauer","Stufe","Initiative"],summary:[defense,stamina,tier,`${vals[1]+tier}${poolWord}`],stats:labs.map((x,i)=>({label:x,value:vals[i],extra:`${vals[i]+tier}${poolWord} Pool`})),skills,combat:`<b>Regelprofil:</b> ${poolWord}-Würfelpool<br><br><b>Körperlicher Angriff:</b> ${attackPool}${poolWord}<br><b>Soziale/mentale Aktion:</b> ${socialPool}${poolWord}<br><b>Abwehr:</b> ${defense}<br><b>Ausdauer:</b> ${stamina}<br><br><b>Besondere Fähigkeit:</b> ${special}<br><br><span style="color:#aaa">Hinweis: D${die} ist ein neutrales NPC-Schmiede-Regelprofil und kein Nachbau eines bestimmten kommerziellen Regelwerks.</span>`};
 }
 
 async function initGoogleDrive(){
@@ -253,7 +262,7 @@ async function loadPortraitFromDrive(fileId){
 }
 async function deletePortraitFromDrive(fileId){if(!fileId)return;try{const r=await driveRequest(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`,{method:'DELETE'});if(!r.ok&&r.status!==404)throw new Error('Drive-Löschen fehlgeschlagen.');}catch(e){console.warn(e);}}
 
-function randomPrompt(){document.getElementById("keywords").value=pick(["alte Zwergin, Schmiedin, mürrisch","junger Elf, Spion, nervös","Halbork, Wirt, freundlich","Mensch, Priester, geheimnisvoll","Elfin, Jägerin, arrogant","Zwerg, Händler, misstrauisch"])}
+function randomPrompt(){const setting=(document.getElementById("setting").value||"").toLowerCase();const fantasy=setting.includes("fantasy")||setting.includes("mittelalter");document.getElementById("keywords").value=pick(fantasy?["alte Zwergin, Schmiedin, mürrisch","junger Elf, Spion, nervös","Halbork, Wirt, freundlich","Mensch, Priester, geheimnisvoll","Elfin, Jägerin, arrogant","Zwerg, Händler, misstrauisch"]:["ältere Ärztin, aufmerksam, verschlossen","junger Journalist, neugierig, nervös","Wirt, freundlich, kennt jedes Gerücht","Privatdetektivin, hartnäckig, misstrauisch","Händler, charmant, verschuldet","Polizistin, pflichtbewusst, skeptisch"])}
 function clearAll(){document.getElementById("keywords").value="";document.getElementById("result").style.display="none"}
 function getSavedNPCs(){
   try{return JSON.parse(localStorage.getItem("npcSchmiedeNPCs")||"[]")}catch(e){return[]}
@@ -398,7 +407,7 @@ function toggleEditMode(){setEditMode(!editMode);}
 function collectCurrentNPC(){
   const stats=[...document.querySelectorAll("#stats .stat")].map(x=>x.innerText.replace(/\n/g," "));
   return {
-    id:currentNpcId||Date.now(), name:document.getElementById("name").textContent, meta:document.getElementById("meta").textContent,
+    id:currentNpcId||Date.now(), name:document.getElementById("name").textContent, meta:document.getElementById("meta").textContent, system:document.getElementById("system").value, setting:document.getElementById("setting").value.trim()||"Fantasy-Mittelalter",
     ac:document.getElementById("ac").textContent,hp:document.getElementById("hp").textContent,pb:document.getElementById("pb").textContent,init:document.getElementById("init").textContent,
     stats,appearance:document.getElementById("appearance").textContent,clothing:document.getElementById("clothing").textContent,
     personality:document.getElementById("personality").textContent,motivation:document.getElementById("motivation").textContent,quirk:document.getElementById("quirk").textContent,
@@ -467,10 +476,11 @@ async function loadNPC(id){
   if(!n){currentPortraitDriveFileId=null;n=getSavedNPCs().find(x=>String(x.id)===String(id)); if(n)image=await loadPortrait(n.id);}
   if(!n)return;
   currentNpcId=n.id;
+  document.getElementById("system").value=n.system||"5e"; document.getElementById("setting").value=n.setting||"Fantasy-Mittelalter";
   document.getElementById("name").textContent=n.name; document.getElementById("meta").textContent=n.meta;
   document.getElementById("ac").textContent=n.ac; document.getElementById("hp").textContent=n.hp; document.getElementById("pb").textContent=n.pb; document.getElementById("init").textContent=n.init;
-  const labs=["STÄ","GES","KON","INT","WEI","CHA"];
-  document.getElementById("stats").innerHTML=(n.stats||[]).map((v,i)=>`<div class="stat"><b>${labs[i]||""}</b><span>${String(v).split(" ")[1]||""}</span><div>${String(v).split(" ").slice(2).join(" ")}</div></div>`).join("");
+  const poolSystem=(n.system==="d10"||n.system==="d6");document.getElementById("acLabel").textContent=poolSystem?"Abwehr":"RK";document.getElementById("hpLabel").textContent=poolSystem?"Ausdauer":"TP";document.getElementById("pbLabel").textContent=poolSystem?"Stufe":(n.system==="d20"?"Bonus":"ÜB");document.getElementById("initLabel").textContent="Initiative";
+  document.getElementById("stats").innerHTML=(n.stats||[]).map(v=>{const parts=String(v).split(" ");return `<div class="stat"><b>${parts[0]||""}</b><span>${parts[1]||""}</span><div>${parts.slice(2).join(" ")}</div></div>`;}).join("");
   document.getElementById("appearance").textContent=n.appearance||"";document.getElementById("clothing").textContent=n.clothing||"";document.getElementById("personality").textContent=n.personality||"";document.getElementById("motivation").textContent=n.motivation||"";
   document.getElementById("quirk").textContent=n.quirk||"";document.getElementById("ibf").innerText=n.ibf||"";document.getElementById("secret").textContent=n.secret||"";document.getElementById("skills").innerText=n.skills||"";
   document.getElementById("speech").textContent=n.speech||"";document.getElementById("combat").innerText=n.combat||"";document.getElementById("usedWhere").value=n.usedWhere||"";document.getElementById("knownNPCs").value=n.knownNPCs||"";document.getElementById("gmNotes").value=n.gmNotes||"";
@@ -485,6 +495,8 @@ async function generateImage(){
   const status=document.getElementById("imageStatus");
   status.textContent="Portrait wird erzeugt …";
   const payload={
+    system:document.getElementById("system").value,
+    setting:document.getElementById("setting").value.trim()||"Fantasy-Mittelalter",
     name:document.getElementById("name").textContent,
     meta:document.getElementById("meta").textContent,
     appearance:document.getElementById("appearance").textContent,

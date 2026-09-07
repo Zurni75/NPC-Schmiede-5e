@@ -1,30 +1,21 @@
-NPC-Schmiede v0.46.1
+NPC-Schmiede v0.47
 
-Neu in v0.46:
-- NPC-Daten bleiben in Upstash synchronisiert.
-- Portraits werden nicht mehr neu in Upstash gespeichert, sondern in Deinem Google Drive.
-- PC und Tablet können dadurch dieselben Portraits laden.
-- Alte v0.45-Portraits bleiben zunächst erhalten und gehen beim Update nicht verloren.
-- Sobald ein alter NSC mit Portrait bei verbundenem Google Drive gespeichert wird, wird das Portrait nach Drive migriert und die alte Redis-Bildkopie entfernt.
-- Google Drive wird nur bei Bedarf verbunden; die App verwendet den eingeschränkten Scope drive.file.
+Neu in v0.47:
+- Regelsystem-Auswahl: 5e, D20, D10, D6.
+- Freies Feld „Setting / Welt / Epoche“ statt fester Setting-Liste.
+- KI passt Namen, Berufe, Kleidung, Ausrüstung und Hintergrund an das eingegebene Setting an.
+- Portrait-Prompt berücksichtigt Setting/Epoche ausdrücklich und vermeidet Fantasy-Standardkleidung außerhalb von Fantasy-Settings.
+- 5e bleibt mit den bisherigen sechs Attributen und lokalen Berechnungen erhalten.
+- D20 verwendet ein neutrales W20-Regelprofil.
+- D10 und D6 verwenden neutrale Würfelpool-Profile; sie sind ausdrücklich keine Nachbauten eines bestimmten kommerziellen Regelwerks.
+- Alte gespeicherte NSC ohne System-/Setting-Feld werden automatisch als 5e + Fantasy-Mittelalter geladen.
+- Cloud-Sync via Upstash und Portrait-Sync via Google Drive bleiben unverändert.
 
-Benötigte Vercel Environment Variables:
+Benötigte Vercel Environment Variables (unverändert):
 - OPENAI_API_KEY
 - UPSTASH_REDIS_REST_URL
 - UPSTASH_REDIS_REST_TOKEN
 - NPC_SYNC_SECRET
-- GOOGLE_CLIENT_ID   <-- NEU in v0.46
+- GOOGLE_CLIENT_ID
 
-GOOGLE_CLIENT_ID ist die OAuth-Client-ID aus Google Auth Platform > Clients > NPC-Schmiede.
-Sie ist keine geheime Client-Secret-Zeichenfolge. Der Google Clientschlüssel wird NICHT benötigt.
-
-Google Cloud:
-- Google Drive API aktiviert
-- OAuth-Webclient für https://npc-schmiede-5e.vercel.app
-- Scope https://www.googleapis.com/auth/drive.file
-- eigener Google-Account als Testnutzer, solange die App im Testmodus ist
-
-
-Fix in v0.46.1:
-- Lokale NSC können über einen eigenen Button sicher in eine leere Cloud übernommen werden.
-- Ein alter Migrations-Merker verhindert die Wiederherstellung nicht mehr, wenn die Cloud leer ist.
+Stabiler Rücksetzpunkt vor dieser Änderung: v0.46.1-stable.
