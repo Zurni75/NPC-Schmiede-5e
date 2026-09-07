@@ -83,8 +83,11 @@ export default async function handler(req, res) {
       if (!npc || npc.id === undefined || npc.id === null) return send(res, 400, { error: 'Ungültiger NSC.' });
       const id = String(npc.id);
       const updatedAt = Date.now();
-      const portrait = req.body?.portrait || null;
-      const record = { npc, portrait, updatedAt };
+      const oldRaw = await redis(['GET', `${NPC_PREFIX}${id}`]);
+      let oldRecord = {}; try { oldRecord = oldRaw ? JSON.parse(oldRaw) : {}; } catch {}
+      const portraitDriveFileId = req.body?.portraitDriveFileId || oldRecord.portraitDriveFileId || null;
+      const legacyPortrait = req.body?.clearLegacyPortrait ? null : (oldRecord.portrait || null);
+      const record = { npc, portraitDriveFileId, portrait: legacyPortrait, updatedAt };
       const index = await getIndex();
       const meta = {
         id: npc.id,
@@ -92,7 +95,8 @@ export default async function handler(req, res) {
         meta: npc.meta || '',
         usedWhere: npc.usedWhere || '',
         updatedAt,
-        hasPortrait: Boolean(portrait)
+        hasPortrait: Boolean(portraitDriveFileId || legacyPortrait),
+        portraitDriveFileId: portraitDriveFileId || null
       };
       const pos = index.findIndex(x => String(x.id) === id);
       if (pos >= 0) index[pos] = meta; else index.unshift(meta);

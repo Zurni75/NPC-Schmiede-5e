@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NPC-Schmiede v0.45</title>
+<title>NPC-Schmiede v0.46</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -29,9 +29,10 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 .npcrow small{color:var(--muted);display:block;margin-top:3px}.npcrow button{width:auto;padding:9px 12px}.npcactions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.danger{background:#3b1d22!important;border-color:#6b2b35!important;color:#ffd8dd!important}
 @media(max-width:850px){.formgrid{grid-template-columns:1fr 1fr}.hero{grid-template-columns:1fr}.portrait{max-width:260px}}@media(max-width:620px){.formgrid,.buttons,.sections,.searchbox{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}
 .portrait img{width:100%;height:100%;object-fit:cover;border-radius:14px}#playerImage img{max-width:100vw;max-height:100vh;object-fit:contain}</style>
+<script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body><div class="wrap">
-<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Fantasy NPC Generator – KI-Charaktere + 5e-Werte</div></div><div class="badge">v0.45</div></header>
+<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Fantasy NPC Generator – KI-Charaktere + 5e-Werte</div></div><div class="badge">v0.46</div></header>
 
 <div id="mainScreen">
 <div class="card">
@@ -42,7 +43,7 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 <div><label>Geschlecht</label><select id="gender"><option>Zufällig</option><option>Weiblich</option><option>Männlich</option><option>Divers</option></select></div>
 </div>
 <div class="buttons"><button onclick="generateNPC()">✨ NPC generieren</button><button class="secondary" onclick="randomPrompt()">🎲 Stichworte</button><button class="secondary" onclick="clearAll()">Leeren</button><button class="secondary" onclick="showLibrary()">📚 Gespeicherte NSC <span id="savedCount"></span></button></div>
-<div class="api"><b>KI aktiv:</b> Kreative Charaktertexte werden über GPT-5.6 Luna erzeugt. Regelwerte und Kampfwerte berechnet die App lokal. Portraits werden weiterhin nur auf Knopfdruck erzeugt.<br><b>☁ Synchronisierung:</b> Gespeicherte NSC können über Deinen privaten Cloud-Speicher zwischen Tablet und PC synchronisiert werden.</div><div id="syncStatus" class="note" style="margin-top:8px"></div><div id="npcStatus" class="note" style="margin-top:10px"></div>
+<div class="api"><b>KI aktiv:</b> Kreative Charaktertexte werden über GPT-5.6 Luna erzeugt. Regelwerte und Kampfwerte berechnet die App lokal. Portraits werden weiterhin nur auf Knopfdruck erzeugt.<br><b>☁ Synchronisierung:</b> NSC-Daten liegen in Deiner privaten Cloud; Portraits können in Deinem Google Drive gespeichert werden.</div><div class="buttons" style="margin-top:10px"><button class="secondary" id="googleDriveButton" onclick="connectGoogleDrive()">🔗 Google Drive verbinden</button></div><div id="driveStatus" class="note" style="margin-top:8px">Google Drive noch nicht verbunden.</div><div id="syncStatus" class="note" style="margin-top:8px"></div><div id="npcStatus" class="note" style="margin-top:10px"></div>
 </div>
 
 <div id="result" class="card result">
@@ -79,7 +80,7 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 
 <div id="libraryScreen" style="display:none">
   <div class="card">
-    <div class="library-head"><div><h2 style="margin:0">📚 Gespeicherte NSC</h2><div class="note">Deine private Sammlung. Bei aktiver Cloud-Verbindung erscheinen hier auf Tablet und PC dieselben NSC samt Portraits.</div></div><div class="npcactions"><button class="secondary" onclick="changeSyncSecret()">☁ Verbindung</button><button class="secondary" onclick="showMainScreen()">← Zurück</button></div></div>
+    <div class="library-head"><div><h2 style="margin:0">📚 Gespeicherte NSC</h2><div class="note">Deine private Sammlung. Bei aktiver Cloud- und Google-Drive-Verbindung erscheinen hier auf Tablet und PC dieselben NSC samt Portraits.</div></div><div class="npcactions"><button class="secondary" onclick="changeSyncSecret()">☁ Verbindung</button><button class="secondary" onclick="showMainScreen()">← Zurück</button></div></div>
     <div id="librarySyncStatus" class="note" style="margin-bottom:10px"></div>
     <div class="searchbox">
       <input id="npcSearch" placeholder="Suche nach Name, Ort, Beruf, Volk, Notiz oder bekanntem NSC ..." oninput="renderSavedNPCs()">
@@ -92,6 +93,11 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 <script>
 let currentNpcId=null;
 let currentPortraitData=null;
+let currentPortraitDriveFileId=null;
+let googleAccessToken=null;
+let googleTokenClient=null;
+let googleClientId=null;
+const DRIVE_SCOPE="https://www.googleapis.com/auth/drive.file";
 let editMode=false;
 
 const D={
@@ -197,6 +203,56 @@ async function generateNPC(){
     status.textContent="Fehler bei der KI-Generierung: "+err.message;
   }finally{if(button)button.disabled=false;}
 }
+
+async function initGoogleDrive(){
+  try{
+    const r=await fetch('/api/google-config'); const cfg=await r.json();
+    if(!r.ok||!cfg.clientId)throw new Error(cfg.error||'Google Client-ID fehlt.');
+    googleClientId=cfg.clientId;
+    setDriveStatus('Google Drive bereit – noch nicht verbunden.');
+  }catch(e){setDriveStatus('⚠ Google Drive noch nicht eingerichtet: '+e.message);}
+}
+function setDriveStatus(t){const e=document.getElementById('driveStatus');if(e)e.textContent=t||'';}
+function waitForGoogleIdentity(){return new Promise((resolve,reject)=>{let n=0;const tick=()=>{if(window.google?.accounts?.oauth2)return resolve();if(++n>50)return reject(new Error('Google-Anmeldung konnte nicht geladen werden.'));setTimeout(tick,100)};tick();});}
+async function connectGoogleDrive(){
+  try{
+    if(!googleClientId)await initGoogleDrive();
+    if(!googleClientId)throw new Error('Google Client-ID fehlt.');
+    await waitForGoogleIdentity();
+    if(!googleTokenClient)googleTokenClient=google.accounts.oauth2.initTokenClient({client_id:googleClientId,scope:DRIVE_SCOPE,callback:()=>{}});
+    setDriveStatus('Google-Anmeldung wird geöffnet …');
+    const token=await new Promise((resolve,reject)=>{googleTokenClient.callback=r=>r?.access_token?resolve(r.access_token):reject(new Error(r?.error||'Anmeldung abgebrochen.'));googleTokenClient.requestAccessToken({prompt:googleAccessToken?'':'consent'});});
+    googleAccessToken=token;
+    setDriveStatus('✓ Google Drive verbunden. Portraits können geräteübergreifend geladen werden.');
+    const b=document.getElementById('googleDriveButton');if(b)b.textContent='✓ Google Drive verbunden';
+    return true;
+  }catch(e){setDriveStatus('⚠ '+e.message);return false;}
+}
+async function driveRequest(url,options={}){
+  if(!googleAccessToken){const ok=await connectGoogleDrive();if(!ok)throw new Error('Google Drive ist nicht verbunden.');}
+  let res=await fetch(url,{...options,headers:{...(options.headers||{}),Authorization:'Bearer '+googleAccessToken}});
+  if(res.status===401){googleAccessToken=null;const ok=await connectGoogleDrive();if(!ok)throw new Error('Google-Anmeldung abgelaufen.');res=await fetch(url,{...options,headers:{...(options.headers||{}),Authorization:'Bearer '+googleAccessToken}});}
+  return res;
+}
+async function uploadPortraitToDrive(dataUrl,npc,fileId=null){
+  if(!dataUrl||!String(dataUrl).startsWith('data:image/'))return fileId;
+  const blob=await (await fetch(dataUrl)).blob();
+  const safe=(npc.name||'NSC').replace(/[\/:*?"<>|]/g,'_').slice(0,80);
+  const meta={name:`NPC-Schmiede - ${safe} - ${npc.id}.jpg`,mimeType:'image/jpeg',appProperties:{app:'npc-schmiede',npcId:String(npc.id)}};
+  const boundary='npc_schmiede_'+Date.now();
+  const body=new Blob([`--${boundary}\r\nContent-Type: application/json; charset=UTF-8\r\n\r\n${JSON.stringify(meta)}\r\n--${boundary}\r\nContent-Type: image/jpeg\r\n\r\n`,blob,`\r\n--${boundary}--`]);
+  const url=fileId?`https://www.googleapis.com/upload/drive/v3/files/${encodeURIComponent(fileId)}?uploadType=multipart&fields=id`:'https://www.googleapis.com/upload/drive/v3/files?uploadType=multipart&fields=id';
+  const res=await driveRequest(url,{method:fileId?'PATCH':'POST',headers:{'Content-Type':`multipart/related; boundary=${boundary}`},body});
+  const out=await res.json().catch(()=>({}));if(!res.ok)throw new Error(out?.error?.message||'Portrait konnte nicht in Google Drive gespeichert werden.');return out.id;
+}
+async function loadPortraitFromDrive(fileId){
+  if(!fileId)return null;
+  const res=await driveRequest(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}?alt=media`);
+  if(!res.ok){const e=await res.json().catch(()=>({}));throw new Error(e?.error?.message||'Portrait konnte nicht aus Google Drive geladen werden.');}
+  const blob=await res.blob();return await new Promise((resolve,reject)=>{const r=new FileReader();r.onload=()=>resolve(r.result);r.onerror=reject;r.readAsDataURL(blob);});
+}
+async function deletePortraitFromDrive(fileId){if(!fileId)return;try{const r=await driveRequest(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`,{method:'DELETE'});if(!r.ok&&r.status!==404)throw new Error('Drive-Löschen fehlgeschlagen.');}catch(e){console.warn(e);}}
+
 function randomPrompt(){document.getElementById("keywords").value=pick(["alte Zwergin, Schmiedin, mürrisch","junger Elf, Spion, nervös","Halbork, Wirt, freundlich","Mensch, Priester, geheimnisvoll","Elfin, Jägerin, arrogant","Zwerg, Händler, misstrauisch"])}
 function clearAll(){document.getElementById("keywords").value="";document.getElementById("result").style.display="none"}
 function getSavedNPCs(){
@@ -262,8 +318,9 @@ async function offerLocalMigration(){
   for(const npc of locals){
     try{
       const portrait=await loadPortrait(npc.id);
-      const cloudPortrait=portrait?await preparePortraitForCloud(portrait):null;
-      await cloudFetch('/api/sync-npcs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({npc,portrait:cloudPortrait})});
+      let portraitDriveFileId=null;
+      if(portrait&&googleAccessToken)portraitDriveFileId=await uploadPortraitToDrive(await preparePortraitForCloud(portrait),npc);
+      await cloudFetch('/api/sync-npcs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({npc,portraitDriveFileId})});
       done++;
     }catch(e){console.warn("Migration fehlgeschlagen",npc?.name,e);}
   }
@@ -307,6 +364,7 @@ function preparePortraitForCloud(data){
 }
 function resetPortrait(){
   currentPortraitData=null;
+  currentPortraitDriveFileId=null;
   document.getElementById("portraitBox").innerHTML='Noch kein Portrait.<br><br><b>Antippen für Spieleransicht</b>';
   document.getElementById("playerImage").innerHTML='<div id="playerPlaceholder">Noch kein Portrait vorhanden.<br><br><span style="font-size:14px;color:#aaa">Antippen zum Schließen</span></div>';
 }
@@ -353,9 +411,14 @@ async function saveNPC(){
   try{
     if(!cloudReady)await connectCloud(true);
     if(!cloudReady)throw new Error("Keine Cloud-Verbindung.");
-    const cloudPortrait=currentPortraitData?await preparePortraitForCloud(currentPortraitData):null;
-    if(cloudPortrait)currentPortraitData=cloudPortrait;
-    await cloudFetch('/api/sync-npcs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({npc,portrait:cloudPortrait})});
+    let driveFileId=currentPortraitDriveFileId;
+    if(currentPortraitData){
+      const prepared=await preparePortraitForCloud(currentPortraitData); currentPortraitData=prepared;
+      if(!googleAccessToken)await connectGoogleDrive();
+      if(googleAccessToken)driveFileId=await uploadPortraitToDrive(prepared,npc,driveFileId);
+    }
+    currentPortraitDriveFileId=driveFileId||null;
+    await cloudFetch('/api/sync-npcs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({npc,portraitDriveFileId:currentPortraitDriveFileId,clearLegacyPortrait:Boolean(currentPortraitDriveFileId)})});
     mirrorLocalNPC(npc,currentPortraitData);
     await connectCloud(false);
     document.getElementById("saved").textContent=existed?"✓ Änderungen gespeichert und synchronisiert.":"✓ NPC gespeichert und synchronisiert.";
@@ -381,7 +444,7 @@ async function deleteNPC(id){
   if(!confirm(`„${meta.name}“ wirklich löschen?\n\nDiese Aktion löscht den NSC auf allen verbundenen Geräten und kann nicht rückgängig gemacht werden.`))return;
   try{
     if(!cloudReady)await connectCloud(false);
-    if(cloudReady)await cloudFetch('/api/sync-npcs?id='+encodeURIComponent(id),{method:'DELETE'});
+    if(cloudReady){const rec=await cloudFetch('/api/sync-npcs?id='+encodeURIComponent(id));const fid=rec.portraitDriveFileId||null;await cloudFetch('/api/sync-npcs?id='+encodeURIComponent(id),{method:'DELETE'});if(fid)await deletePortraitFromDrive(fid);}
   }catch(e){alert("Cloud-Löschen fehlgeschlagen: "+e.message);return;}
   const next=getSavedNPCs().filter(x=>String(x.id)!==String(id)); setLocalSavedNPCs(next); await deletePortrait(id);
   if(String(currentNpcId)===String(id)){currentNpcId=null;resetPortrait();document.getElementById("result").style.display="none";}
@@ -391,9 +454,9 @@ async function loadNPC(id){
   let n=null,image=null;
   try{
     if(!cloudReady)await connectCloud(false);
-    if(cloudReady){const rec=await cloudFetch('/api/sync-npcs?id='+encodeURIComponent(id));n=rec.npc;image=rec.portrait||null;}
+    if(cloudReady){const rec=await cloudFetch('/api/sync-npcs?id='+encodeURIComponent(id));n=rec.npc;currentPortraitDriveFileId=rec.portraitDriveFileId||null;if(currentPortraitDriveFileId){try{image=await loadPortraitFromDrive(currentPortraitDriveFileId);}catch(e){document.getElementById('imageStatus').textContent='⚠ '+e.message;}}if(!image)image=rec.portrait||null;}
   }catch(e){console.warn(e);}
-  if(!n){n=getSavedNPCs().find(x=>String(x.id)===String(id)); if(n)image=await loadPortrait(n.id);}
+  if(!n){currentPortraitDriveFileId=null;n=getSavedNPCs().find(x=>String(x.id)===String(id)); if(n)image=await loadPortrait(n.id);}
   if(!n)return;
   currentNpcId=n.id;
   document.getElementById("name").textContent=n.name; document.getElementById("meta").textContent=n.meta;
@@ -405,7 +468,7 @@ async function loadNPC(id){
   document.getElementById("speech").textContent=n.speech||"";document.getElementById("combat").innerText=n.combat||"";document.getElementById("usedWhere").value=n.usedWhere||"";document.getElementById("knownNPCs").value=n.knownNPCs||"";document.getElementById("gmNotes").value=n.gmNotes||"";
   if(image){currentPortraitData=image;document.getElementById("portraitBox").innerHTML=`<img src="${image}" alt="NSC Portrait">`;document.getElementById("playerImage").innerHTML=`<img src="${image}" alt="Spieleransicht">`;await savePortrait(n.id,image);}else resetPortrait();
   mirrorLocalNPC(n,image);
-  document.getElementById("imageStatus").textContent=image?"✓ Synchronisiertes Portrait geladen.":"Für diesen NSC ist noch kein Portrait hinterlegt.";
+  document.getElementById("imageStatus").textContent=image?(currentPortraitDriveFileId?"✓ Portrait aus Google Drive geladen.":"✓ Portrait geladen."):"Für diesen NSC ist noch kein Portrait hinterlegt.";
   document.getElementById("saved").style.display="none";document.getElementById("saveNpcButton").textContent="💾 Änderungen speichern";setEditMode(true);showMainScreen();document.getElementById("result").style.display="block";document.getElementById("result").scrollIntoView({behavior:"smooth"});
 }
 function openPlayerView(){document.getElementById("playerView").style.display="flex"}
@@ -432,6 +495,7 @@ async function generateImage(){
 }
 renderSavedNPCs();
 updateSavedCount();
+initGoogleDrive();
 if(getSyncSecret()) connectCloud(false);
 if ('serviceWorker' in navigator) {
   window.addEventListener('load', () => navigator.serviceWorker.register('/service-worker.js').catch(()=>{}));
