@@ -1,4 +1,4 @@
-NPC-Schmiede v0.46
+NPC-Schmiede v0.46.1
 
 Neu in v0.46:
 - NPC-Daten bleiben in Upstash synchronisiert.
@@ -23,3 +23,8 @@ Google Cloud:
 - OAuth-Webclient für https://npc-schmiede-5e.vercel.app
 - Scope https://www.googleapis.com/auth/drive.file
 - eigener Google-Account als Testnutzer, solange die App im Testmodus ist
+
+
+Fix in v0.46.1:
+- Lokale NSC können über einen eigenen Button sicher in eine leere Cloud übernommen werden.
+- Ein alter Migrations-Merker verhindert die Wiederherstellung nicht mehr, wenn die Cloud leer ist.
