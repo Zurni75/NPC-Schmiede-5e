@@ -1,6 +1,10 @@
-NPC-Schmiede v0.47.1
+NPC-Schmiede v0.47.2
 
-Neu in v0.47.1:
+Neu in v0.47.2:
+- Formatierungsfix für Ideal / Bindung / Makel, auch bei gespeicherten NSC.
+- Alte Speicherstände werden beim Laden wieder in drei saubere Zeilenblöcke zerlegt.
+
+Basis aus v0.47.1:
 - Regelsystem-Auswahl vereinfacht auf 5e, D6 und D10; generisches D20 wurde entfernt.
 - Freies Feld „Setting / Welt / Epoche“ bleibt erhalten.
 - 5e behält die bisherigen sechs Attribute und lokalen Berechnungen.

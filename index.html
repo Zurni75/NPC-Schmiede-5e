@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NPC-Schmiede v0.47.1</title>
+<title>NPC-Schmiede v0.47.2</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -32,7 +32,7 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body><div class="wrap">
-<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Systemübergreifender NPC-Generator – KI-Charaktere + feste Regelprofile</div></div><div class="badge">v0.47.1</div></header>
+<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Systemübergreifender NPC-Generator – KI-Charaktere + feste Regelprofile</div></div><div class="badge">v0.47.2</div></header>
 
 <div id="mainScreen">
 <div class="card">
@@ -126,6 +126,26 @@ const skillAbility={
   "Athletik":0,"Akrobatik":1,"Fingerfertigkeit":1,"Heimlichkeit":1,"Arkane Kunde":3,"Geschichte":3,"Nachforschungen":3,"Naturkunde":3,"Religion":3,
   "Tierführung":4,"Menschenkenntnis":4,"Heilkunde":4,"Wahrnehmung":4,"Überleben":4,"Täuschung":5,"Einschüchtern":5,"Auftreten":5,"Überreden":5,"Handwerk":3
 };
+function renderIBF(ideal,bond,flaw){
+  const box=document.getElementById("ibf");
+  box.innerHTML="";
+  [["Ideal",ideal],["Bindung",bond],["Makel",flaw]].forEach(([label,value])=>{
+    const l=document.createElement("div"); l.textContent=label;
+    const v=document.createElement("div"); v.textContent=value||"";
+    box.append(l,v);
+  });
+}
+function renderStoredIBF(value){
+  const text=String(value||"").replace(/\r/g,"").trim();
+  const match=text.match(/^Ideal\s*\n([\s\S]*?)\n\s*Bindung\s*\n([\s\S]*?)\n\s*Makel\s*\n([\s\S]*)$/i);
+  if(match){renderIBF(match[1].trim(),match[2].trim(),match[3].trim());return;}
+  // Fallback für ältere Speicherstände ohne saubere Absatzstruktur.
+  const ideal=(text.match(/Ideal\s*[:\-]?\s*([\s\S]*?)(?=\s*Bindung\s*[:\-]?|$)/i)||[])[1]||"";
+  const bond=(text.match(/Bindung\s*[:\-]?\s*([\s\S]*?)(?=\s*Makel\s*[:\-]?|$)/i)||[])[1]||"";
+  const flaw=(text.match(/Makel\s*[:\-]?\s*([\s\S]*)/i)||[])[1]||"";
+  if(ideal||bond||flaw)renderIBF(ideal.trim(),bond.trim(),flaw.trim());
+  else renderIBF(text,"","");
+}
 async function generateNPC(){
   const status=document.getElementById("npcStatus");
   const button=document.querySelector('button[onclick="generateNPC()"]');
@@ -164,7 +184,7 @@ async function generateNPC(){
     document.getElementById("quirk").textContent=npc.quirk;
     document.getElementById("secret").textContent=npc.secret;
     document.getElementById("speech").textContent=npc.speech;
-    document.getElementById("ibf").innerHTML=`<div>Ideal</div><div>${npc.ideal}</div><div>Bindung</div><div>${npc.bond}</div><div>Makel</div><div>${npc.flaw}</div>`;
+    renderIBF(npc.ideal,npc.bond,npc.flaw);
     document.getElementById("skills").innerHTML=mech.skills;
     document.getElementById("combat").innerHTML=mech.combat;
 
@@ -510,7 +530,7 @@ async function loadNPC(id){
   const poolSystem=(n.system==="d10"||n.system==="d6");document.getElementById("acLabel").textContent=n.system==="d6"?"Widerstand":(poolSystem?"Abwehr":"RK");document.getElementById("hpLabel").textContent=n.system==="d6"?"Wunden":(poolSystem?"Ausdauer":"TP");document.getElementById("pbLabel").textContent=poolSystem?"Kompetenz":"ÜB";document.getElementById("initLabel").textContent="Initiative";updateLevelLabel();
   document.getElementById("stats").innerHTML=(n.stats||[]).map(v=>{const parts=String(v).split(" ");return `<div class="stat"><b>${parts[0]||""}</b><span>${parts[1]||""}</span><div>${parts.slice(2).join(" ")}</div></div>`;}).join("");
   document.getElementById("appearance").textContent=n.appearance||"";document.getElementById("clothing").textContent=n.clothing||"";document.getElementById("personality").textContent=n.personality||"";document.getElementById("motivation").textContent=n.motivation||"";
-  document.getElementById("quirk").textContent=n.quirk||"";document.getElementById("ibf").innerText=n.ibf||"";document.getElementById("secret").textContent=n.secret||"";document.getElementById("skills").innerText=n.skills||"";
+  document.getElementById("quirk").textContent=n.quirk||"";renderStoredIBF(n.ibf||"");document.getElementById("secret").textContent=n.secret||"";document.getElementById("skills").innerText=n.skills||"";
   document.getElementById("speech").textContent=n.speech||"";document.getElementById("combat").innerText=n.combat||"";document.getElementById("usedWhere").value=n.usedWhere||"";document.getElementById("knownNPCs").value=n.knownNPCs||"";document.getElementById("gmNotes").value=n.gmNotes||"";
   if(image){currentPortraitData=image;document.getElementById("portraitBox").innerHTML=`<img src="${image}" alt="NSC Portrait">`;document.getElementById("playerImage").innerHTML=`<img src="${image}" alt="Spieleransicht">`;await savePortrait(n.id,image);}else resetPortrait();
   mirrorLocalNPC(n,image);
