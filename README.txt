@@ -1,6 +1,6 @@
-NPC-Schmiede v0.47.3
+NPC-Schmiede v0.47.4
 
-Neu in v0.47.3:
+Neu in v0.47.4:
 - Kontextabhängige Waffenwahl bei 5e: Setting, Volk/Körpergröße, Beruf und NPC-Rolle werden berücksichtigt.
 - Gnome/Halblinge erhalten keine unplausibel großen Waffen; Speere nur bei passender Rolle.
 - Zivilisten können unbewaffnet sein; eine Zweitwaffe ist nicht mehr zwingend.
@@ -31,3 +31,9 @@ Benötigte Vercel Environment Variables (unverändert):
 Stabiler Rücksetzpunkt vor dieser Änderung: v0.46.1-stable.
 
 Hinweis für eine spätere kommerzielle Veröffentlichung: Das D6-Modul ist OpenD6-basiert. Lizenz-, Attribution- und Markenhinweise vor Veröffentlichung final prüfen und mitliefern.
+
+
+Fix v0.47.4:
+- „Neu generieren“ funktioniert jetzt auch bei geöffneten gespeicherten NSC.
+- Ursprüngliche Generierungsparameter werden mitgespeichert und beim Öffnen wiederhergestellt.
+- Bei älteren NSC ohne gespeicherte Stichworte werden Volk + Beruf aus den Metadaten als sinnvolle Fallback-Stichworte verwendet.
