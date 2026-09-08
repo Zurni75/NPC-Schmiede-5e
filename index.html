@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NPC-Schmiede v0.47.4</title>
+<title>NPC-Schmiede v0.48</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -28,11 +28,32 @@ input,select,textarea{background:#11161d;border:1px solid var(--line);color:var(
 .npcrow{background:#11161d;border:1px solid var(--line);border-radius:12px;padding:12px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:center}
 .npcrow small{color:var(--muted);display:block;margin-top:3px}.npcrow button{width:auto;padding:9px 12px}.npcactions{display:flex;gap:8px;flex-wrap:wrap;justify-content:flex-end}.danger{background:#3b1d22!important;border-color:#6b2b35!important;color:#ffd8dd!important}
 @media(max-width:850px){.formgrid{grid-template-columns:1fr 1fr}.hero{grid-template-columns:1fr}.portrait{max-width:260px}}@media(max-width:620px){.formgrid,.buttons,.sections,.searchbox{grid-template-columns:1fr}.stats{grid-template-columns:repeat(3,1fr)}}
-.portrait img{width:100%;height:100%;object-fit:cover;border-radius:14px}#playerImage img{max-width:100vw;max-height:100vh;object-fit:contain}</style>
+.portrait img{width:100%;height:100%;object-fit:cover;border-radius:14px}#playerImage img{max-width:100vw;max-height:100vh;object-fit:contain}
+/* v0.48 – optische Überarbeitung. Funktionale Logik bleibt unverändert. */
+:root{--bg:#090c11;--panel:#121821;--panel2:#1b2531;--text:#f5efe3;--muted:#b9b1a4;--accent:#d7a84b;--accent2:#f1d18a;--line:#4a3b26;--good:#a8d8a4;--parch:#ead8b3;--ink:#2b2116}
+body{padding:0;background:radial-gradient(circle at 50% -10%,#263142 0,#0b1017 42%,#070a0f 100%);background-attachment:fixed}
+body:before{content:"";position:fixed;inset:0;pointer-events:none;opacity:.18;background-image:linear-gradient(rgba(255,255,255,.025) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.018) 1px,transparent 1px);background-size:36px 36px}
+.wrap{max-width:1320px;padding:0 24px 40px}
+header{position:relative;min-height:190px;margin:0 -24px 22px;padding:42px 38px 30px;align-items:center;overflow:hidden;border-bottom:1px solid #765b2c;background:linear-gradient(90deg,rgba(5,8,12,.92),rgba(5,8,12,.48),rgba(5,8,12,.78)),url('/header-art.jpg') center 18%/cover no-repeat;box-shadow:0 18px 45px rgba(0,0,0,.45)}
+header:after{content:"";position:absolute;left:0;right:0;bottom:0;height:3px;background:linear-gradient(90deg,transparent,#d7a84b 20%,#f1d18a 50%,#d7a84b 80%,transparent)}
+header>div{position:relative;z-index:1}h1{font-size:52px;letter-spacing:.5px;color:#f4d897;text-shadow:0 3px 12px #000} .subtitle{font-family:Georgia,serif;font-size:17px;color:#e7dcc8;margin-top:5px;text-shadow:0 2px 6px #000}.badge{background:rgba(8,12,17,.8);border-color:#9b7638;color:#f0d28f;box-shadow:0 0 20px rgba(215,168,75,.12)}
+.card{background:linear-gradient(145deg,rgba(20,27,36,.98),rgba(12,17,24,.98));border:1px solid #3d4653;border-top-color:#72592e;box-shadow:0 18px 55px rgba(0,0,0,.32),inset 0 1px rgba(255,255,255,.025)}
+.card:first-child{border-color:#6f552d;background:linear-gradient(180deg,rgba(28,34,42,.98),rgba(15,20,27,.98))}
+label{font-family:Georgia,serif;color:#ecd08f;letter-spacing:.2px}input,select,textarea{background:#0d131a;border-color:#3b4654;box-shadow:inset 0 2px 8px rgba(0,0,0,.25)}input:focus,select:focus,textarea:focus{outline:none;border-color:#c69b47;box-shadow:0 0 0 3px rgba(215,168,75,.12)}
+button{background:linear-gradient(180deg,#e0b65b,#b9842e);color:#171006;border:1px solid #f0cc7b;box-shadow:0 5px 16px rgba(0,0,0,.25),inset 0 1px rgba(255,255,255,.25);transition:transform .12s ease,filter .12s ease,box-shadow .12s ease}button:hover{filter:brightness(1.08);transform:translateY(-1px);box-shadow:0 7px 20px rgba(0,0,0,.3)}button:active{transform:translateY(1px)}button.secondary{background:linear-gradient(180deg,#243140,#18222d);border-color:#465667;color:#eee4d5}.danger{background:linear-gradient(180deg,#55262c,#32171b)!important}
+.api{border-left-color:#c89b43;background:linear-gradient(90deg,rgba(93,67,27,.18),rgba(16,22,29,.75));color:#ddd2c0}
+.hero{grid-template-columns:minmax(230px,290px) 1fr;align-items:start}.portrait{border:2px solid #84642f;border-radius:12px;background:radial-gradient(circle at 35% 25%,#4e5c6d,#202833 62%,#10151c);box-shadow:0 12px 30px rgba(0,0,0,.38),0 0 0 5px rgba(107,80,36,.16);overflow:hidden}.portrait img{border-radius:9px}.name{font-size:44px;color:#f0d08b;text-shadow:0 2px 8px #000}.meta{font-family:Georgia,serif;color:#d4c8b7;font-size:16px}.pill{background:linear-gradient(180deg,#121a23,#0c1219);border-color:#4b5867;box-shadow:inset 0 1px rgba(255,255,255,.03)}.pill strong{color:#f1cf83}
+.stats{gap:10px}.stat{background:linear-gradient(180deg,#111a24,#0c1219);border-color:#4a5563;box-shadow:inset 0 1px rgba(255,255,255,.025)}.stat b{color:#c8b98f}.stat span{color:#f4e5c5}
+.sections{gap:14px}.section{position:relative;background:linear-gradient(145deg,#151d27,#10161e);border-color:#3e4855;box-shadow:0 8px 24px rgba(0,0,0,.18);overflow:hidden}.section:before{content:"";position:absolute;left:0;top:0;right:0;height:2px;background:linear-gradient(90deg,#8c692f,transparent 70%)}.section h3{font-size:22px;color:#efd08a;border-bottom:1px solid rgba(215,168,75,.25);padding-bottom:8px;margin-bottom:12px}.kv{grid-template-columns:105px 1fr;gap:8px 14px}.kv div:nth-child(odd){font-family:Georgia,serif;color:#e3bd68}
+#result.card{border-color:#5a4729}.saved{color:#b9e3ae}.note{color:#b9b1a4}.npcrow{background:linear-gradient(180deg,#121922,#0c1218);border-color:#3d4855}.npcrow:hover{border-color:#8a6a35}.library-head h2{color:#efd08a}
+#playerView{background:radial-gradient(circle,#18202b,#05070a)!important}
+@media(max-width:850px){header{min-height:150px;padding:32px 24px}.wrap{padding:0 14px 30px}header{margin:0 -14px 18px}h1{font-size:40px}.hero{grid-template-columns:1fr}.portrait{max-width:320px;margin:auto}.name{text-align:center}.meta{text-align:center}.smallstats{justify-content:center}}
+@media(max-width:620px){header{min-height:135px;padding:26px 18px}h1{font-size:34px}.subtitle{font-size:14px}.badge{position:absolute;right:0;top:-10px}.name{font-size:34px}.section h3{font-size:20px}}
+</style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body><div class="wrap">
-<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Systemübergreifender NPC-Generator – KI-Charaktere + feste Regelprofile</div></div><div class="badge">v0.47.4</div></header>
+<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Systemübergreifender NPC-Generator – KI-Charaktere + feste Regelprofile</div></div><div class="badge">v0.48</div></header>
 
 <div id="mainScreen">
 <div class="card">

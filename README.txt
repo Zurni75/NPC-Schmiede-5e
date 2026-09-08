@@ -1,3 +1,13 @@
+NPC-Schmiede v0.48
+
+Optische Überarbeitung auf Basis von v0.47.4.
+- Atmosphärischer Kopfbereich mit eigener Grafik
+- Gold/dunkles Charakterbogen-Design
+- Portrait stärker hervorgehoben
+- Karten, Buttons, Werte und Formulare visuell überarbeitet
+- Responsive Darstellung für Tablet/Smartphone
+- Keine Änderung an Generierungs-, Speicher-, Sync- oder Waffenlogik
+
 NPC-Schmiede v0.47.4
 
 Neu in v0.47.4:
