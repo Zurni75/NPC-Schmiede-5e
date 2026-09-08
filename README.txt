@@ -1,3 +1,15 @@
+NPC-Schmiede v0.48.1
+
+Vollständiger Design-Umbau auf Basis von v0.48 / v0.47.4.
+- Feste Seitenleiste auf Desktop, kompakte Navigation auf Mobilgeräten
+- Atmosphärischer Schmiede-Header
+- Kompakte Generator-Leiste im Pergamentstil
+- Großes Portrait links, Name/Werte prominent rechts
+- Charakterinformationen als echte Pergament-Karten
+- Eigene Aktionsleiste am unteren Rand des Charakterbogens
+- Bestehende Generierungs-, Speicher-, Sync-, Waffen- und Regelmodul-Logik unverändert
+- Responsive Darstellung für Desktop, Tablet und Smartphone
+
 NPC-Schmiede v0.48
 
 Optische Überarbeitung auf Basis von v0.47.4.

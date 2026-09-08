@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NPC-Schmiede v0.48</title>
+<title>NPC-Schmiede v0.48.1</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -49,14 +49,67 @@ button{background:linear-gradient(180deg,#e0b65b,#b9842e);color:#171006;border:1
 #playerView{background:radial-gradient(circle,#18202b,#05070a)!important}
 @media(max-width:850px){header{min-height:150px;padding:32px 24px}.wrap{padding:0 14px 30px}header{margin:0 -14px 18px}h1{font-size:40px}.hero{grid-template-columns:1fr}.portrait{max-width:320px;margin:auto}.name{text-align:center}.meta{text-align:center}.smallstats{justify-content:center}}
 @media(max-width:620px){header{min-height:135px;padding:26px 18px}h1{font-size:34px}.subtitle{font-size:14px}.badge{position:absolute;right:0;top:-10px}.name{font-size:34px}.section h3{font-size:20px}}
+
+/* v0.48.1 – vollständiger Charakterbogen-Umbau */
+body{overflow-x:hidden}
+.wrap{max-width:none!important;padding:0!important;margin:0!important}
+.app-shell{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:100vh}
+.side-nav{position:sticky;top:0;height:100vh;background:linear-gradient(180deg,#0a0f16 0%,#111823 55%,#090d13 100%);border-right:1px solid #6e542c;box-shadow:10px 0 35px rgba(0,0,0,.28);padding:18px 14px;z-index:50;display:flex;flex-direction:column;gap:12px}
+.side-brand{font-family:Georgia,serif;color:#f0d18b;font-weight:800;font-size:19px;padding:10px 10px 18px;border-bottom:1px solid rgba(215,168,75,.25);letter-spacing:.4px}
+.nav-btn{width:100%;text-align:left;display:flex;align-items:center;gap:10px;background:transparent!important;color:#e6ded1!important;border:1px solid transparent!important;box-shadow:none!important;padding:11px 12px!important;font-weight:650!important}
+.nav-btn:hover{background:rgba(215,168,75,.09)!important;border-color:#5d4727!important;transform:none!important}
+.nav-btn.active{background:linear-gradient(90deg,rgba(215,168,75,.20),rgba(215,168,75,.03))!important;border-color:#9c7638!important;color:#f5d98f!important}
+.nav-icon{width:26px;text-align:center;font-size:20px}
+.side-art{margin-top:auto;min-height:245px;border:1px solid #5f4928;border-radius:14px;overflow:hidden;background:linear-gradient(180deg,rgba(8,11,16,.20),rgba(8,11,16,.92)),url('/header-art.jpg') 70% center/cover no-repeat;display:flex;align-items:flex-end;box-shadow:inset 0 0 35px rgba(0,0,0,.5)}
+.side-quote{font-family:Georgia,serif;font-style:italic;color:#dec48d;font-size:15px;line-height:1.35;padding:18px;text-shadow:0 2px 5px #000}
+.app-main{min-width:0}
+header{margin:0!important;min-height:150px!important;padding:26px 34px 24px!important;background:linear-gradient(90deg,rgba(5,8,12,.92),rgba(5,8,12,.38),rgba(5,8,12,.78)),url('/header-art.jpg') center 24%/cover no-repeat!important}
+header h1{font-size:46px!important}.subtitle{font-size:16px!important}
+.content{padding:18px 26px 42px}
+.generator-card{padding:14px!important;border-radius:12px!important;background:linear-gradient(180deg,#e9d8b7,#d8bd8b)!important;color:#241a10!important;border:1px solid #b68a45!important;box-shadow:0 10px 26px rgba(0,0,0,.28)!important}
+.generator-card .formgrid{grid-template-columns:1.55fr .9fr 1.35fr .72fr .9fr .8fr;gap:10px;align-items:end}
+.generator-card label{color:#3c2b17!important;font-size:14px;margin-bottom:5px}.generator-card input,.generator-card select{background:rgba(255,250,238,.72)!important;color:#241a10!important;border-color:#a48352!important;padding:11px 12px!important}
+.generator-card .buttons{grid-template-columns:1.55fr .9fr .8fr 1.15fr;gap:9px;margin-top:10px}
+.generator-card button.secondary{background:linear-gradient(180deg,#263548,#182331)!important;color:#f3eadb!important;border-color:#526274!important}
+.status-drawer{margin-top:10px;border-top:1px solid rgba(81,58,29,.25);padding-top:9px;display:grid;grid-template-columns:1fr auto;gap:10px;align-items:start}
+.status-copy{font-size:12.5px;color:#55452f;line-height:1.4}.status-copy .api{margin:0;padding:0;background:transparent;border:0;color:#55452f;font-size:12.5px}.status-actions{min-width:210px}.status-actions button{padding:10px!important}
+#driveStatus,#syncStatus,#npcStatus{color:#5a4932!important;font-size:12px}
+#result.card{padding:0!important;overflow:hidden;border-radius:13px!important;background:linear-gradient(145deg,#0f1720,#0b1118)!important}
+.character-head{display:grid;grid-template-columns:minmax(250px,320px) 1fr;gap:0;border-bottom:1px solid #5d482a}
+.portrait-column{padding:18px;background:linear-gradient(180deg,#151c24,#0d131a);border-right:1px solid #5e492a}
+.portrait{width:100%;max-width:300px;margin:0 auto;aspect-ratio:4/5!important;border-radius:10px!important;border:2px solid #a77c35!important;box-shadow:0 0 0 5px #20170d,0 14px 34px rgba(0,0,0,.45)!important}
+.portrait-hint{text-align:center;margin-top:10px;color:#b8aa90;font-size:12px}
+.character-main{padding:20px 22px}.name-row{display:flex;justify-content:space-between;gap:16px;align-items:flex-start;border-bottom:1px solid rgba(215,168,75,.25);padding-bottom:12px}.name{font-size:46px!important;margin:0!important}.meta{margin-top:5px;line-height:1.45}
+.smallstats{display:grid!important;grid-template-columns:repeat(4,1fr);gap:9px!important;margin:16px 0!important}.pill{border-radius:8px!important;padding:10px!important;display:flex;justify-content:space-between;gap:10px;background:#111a23!important}.pill span{color:#bcae95}.pill strong{font-size:18px}
+.stats{grid-template-columns:repeat(6,minmax(72px,1fr))!important}.stat{border-radius:8px!important;padding:9px 6px!important}.stat span{font-size:21px!important}
+.sheet-grid{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px;padding:14px;background:#0b1016}
+.sheet-card{position:relative;background:linear-gradient(145deg,#ead9b8,#d9bd88)!important;color:#281f16!important;border:1px solid #a77b39!important;border-radius:10px!important;padding:16px!important;line-height:1.45;box-shadow:inset 0 0 22px rgba(98,65,25,.12),0 8px 20px rgba(0,0,0,.18);overflow:hidden}
+.sheet-card:before{content:"";position:absolute;inset:0;pointer-events:none;opacity:.22;background-image:radial-gradient(circle at 20% 20%,rgba(100,67,28,.20) 0 1px,transparent 2px);background-size:19px 19px}
+.sheet-card>*{position:relative}.sheet-card h3{font-size:20px!important;color:#3c2b17!important;border-bottom:1px solid rgba(84,58,27,.28)!important;margin:0 0 10px!important;padding-bottom:7px!important}.sheet-card .kv{grid-template-columns:78px 1fr!important;gap:7px 10px!important}.sheet-card .kv div:nth-child(odd){color:#5b3d1d!important;font-weight:800}.sheet-card b{color:#4a3218}.sheet-card.full{grid-column:1/-1}.sheet-card.double{grid-column:span 2}
+.notes-card{margin:0 14px 14px!important;background:linear-gradient(145deg,#151d27,#10161e)!important;color:var(--text)!important}.notes-card h3{color:#efd08a!important}.notes-card input,.notes-card textarea{background:#0d131a!important;color:var(--text)!important}
+.action-bar{display:grid;grid-template-columns:repeat(4,1fr);gap:9px;padding:0 14px 14px}.action-bar button{min-height:44px}
+#saved,#imageStatus{margin:0 14px 10px!important}
+.library-card{max-width:1100px;margin:0 auto}
+@media(max-width:1180px){.generator-card .formgrid{grid-template-columns:repeat(3,1fr)}.sheet-grid{grid-template-columns:1fr 1fr}.sheet-card.double{grid-column:auto}.smallstats{grid-template-columns:repeat(2,1fr)!important}.stats{grid-template-columns:repeat(3,1fr)!important}}
+@media(max-width:900px){.app-shell{grid-template-columns:76px minmax(0,1fr)}.side-nav{padding:12px 8px}.side-brand{font-size:0;text-align:center;padding:10px 0}.side-brand:after{content:'⚒';font-size:26px}.nav-btn{justify-content:center;padding:12px 8px!important}.nav-btn span:last-child{display:none}.side-art{display:none}.character-head{grid-template-columns:1fr}.portrait-column{border-right:0;border-bottom:1px solid #5e492a}.portrait{max-width:260px}.name-row{text-align:center;display:block}.generator-card .formgrid{grid-template-columns:1fr 1fr}.status-drawer{grid-template-columns:1fr}.status-actions{min-width:0}}
+@media(max-width:620px){.app-shell{display:block}.side-nav{position:sticky;height:auto;top:0;flex-direction:row;align-items:center;border-right:0;border-bottom:1px solid #6e542c;padding:6px 8px}.side-brand,.side-art{display:none}.nav-btn{width:auto;flex:1}.nav-btn span:last-child{display:inline;font-size:12px}.nav-icon{font-size:17px;width:auto}.content{padding:10px 8px 28px}header{min-height:110px!important;padding:20px 14px!important}header h1{font-size:31px!important}.subtitle{font-size:12px!important}.generator-card .formgrid,.generator-card .buttons,.sheet-grid,.action-bar{grid-template-columns:1fr}.character-main{padding:16px}.name{font-size:34px!important}.stats{grid-template-columns:repeat(2,1fr)!important}.sheet-card.full,.sheet-card.double{grid-column:auto}.notes-card>div[style*="grid-template-columns"]{grid-template-columns:1fr!important}}
+
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
-<body><div class="wrap">
-<header><div><h1>⚔ NPC-Schmiede</h1><div class="subtitle">Systemübergreifender NPC-Generator – KI-Charaktere + feste Regelprofile</div></div><div class="badge">v0.48</div></header>
-
+<body><div class="wrap"><div class="app-shell">
+<aside class="side-nav">
+  <div class="side-brand">⚒ NPC-SCHMIEDE</div>
+  <button class="nav-btn active" onclick="showMainScreen();window.scrollTo({top:0,behavior:'smooth'})"><span class="nav-icon">⌂</span><span>Start</span></button>
+  <button class="nav-btn" onclick="showMainScreen();clearAll();document.getElementById('keywords').focus()"><span class="nav-icon">＋</span><span>Neuer NSC</span></button>
+  <button class="nav-btn" onclick="showLibrary()"><span class="nav-icon">▤</span><span>Gespeicherte NSC</span></button>
+  <div class="side-art"><div class="side-quote">„Nicht jeder Fremde ist nur Statistik.“</div></div>
+</aside>
+<div class="app-main">
+<header><div><h1>NPC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.48.1</div></header>
+<div class="content">
 <div id="mainScreen">
-<div class="card">
+<div class="card generator-card">
 <div class="formgrid">
 <div><label>1–3 Stichworte</label><input id="keywords" value="alte Zwergin, Schmiedin, mürrisch"></div>
 <div><label>Regelsystem</label><select id="system" onchange="updateLevelLabel()"><option value="5e">5e</option><option value="d6">D6 (OpenD6-basiert)</option><option value="d10">D10 (NPC-Schmiede)</option></select></div>
@@ -65,54 +118,51 @@ button{background:linear-gradient(180deg,#e0b65b,#b9842e);color:#171006;border:1
 <div><label>NPC-Typ</label><select id="role"><option>Normaler NPC</option><option>Wichtiger NPC</option><option>Gegner</option></select></div>
 <div><label>Geschlecht</label><select id="gender"><option>Zufällig</option><option>Weiblich</option><option>Männlich</option><option>Divers</option></select></div>
 </div>
-<div class="buttons"><button id="generateNpcButton" onclick="generateNPC()">✨ NPC generieren</button><button class="secondary" onclick="randomPrompt()">🎲 Stichworte</button><button class="secondary" onclick="clearAll()">Leeren</button><button class="secondary" onclick="showLibrary()">📚 Gespeicherte NSC <span id="savedCount"></span></button></div>
-<div class="api"><b>KI aktiv:</b> Kreative Charaktertexte werden über GPT-5.6 Luna passend zum frei eingegebenen Setting erzeugt. Regelwerte und Kampfwerte berechnet die App lokal nach dem gewählten Regelprofil. Portraits werden weiterhin nur auf Knopfdruck erzeugt.<br><b>☁ Synchronisierung:</b> NSC-Daten liegen in Deiner privaten Cloud; Portraits können in Deinem Google Drive gespeichert werden.</div><div class="buttons" style="margin-top:10px"><button class="secondary" id="googleDriveButton" onclick="connectGoogleDrive()">🔗 Google Drive verbinden</button></div><div id="driveStatus" class="note" style="margin-top:8px">Google Drive noch nicht verbunden.</div><div id="syncStatus" class="note" style="margin-top:8px"></div><div id="npcStatus" class="note" style="margin-top:10px"></div>
+<div class="buttons"><button id="generateNpcButton" onclick="generateNPC()">✒ NPC generieren</button><button class="secondary" onclick="randomPrompt()">🎲 Stichworte</button><button class="secondary" onclick="clearAll()">Leeren</button><button class="secondary" onclick="showLibrary()">▤ Gespeicherte NSC <span id="savedCount"></span></button></div>
+<div class="status-drawer"><div class="status-copy"><div class="api"><b>KI aktiv:</b> Kreative Charaktertexte werden passend zum frei eingegebenen Setting erzeugt. Regel- und Kampfwerte berechnet die App lokal. Portraits entstehen nur auf Knopfdruck.</div><div id="driveStatus" class="note">Google Drive noch nicht verbunden.</div><div id="syncStatus" class="note"></div><div id="npcStatus" class="note"></div></div><div class="status-actions"><button class="secondary" id="googleDriveButton" onclick="connectGoogleDrive()">🔗 Google Drive verbinden</button></div></div>
 </div>
 
 <div id="result" class="card result">
-<div class="hero">
-<div class="portrait" id="portraitBox" onclick="openPlayerView()" style="cursor:pointer">Noch kein Portrait.<br><br><b>Antippen für Spieleransicht</b></div>
-<div><h2 class="name" id="name"></h2><div class="meta" id="meta"></div>
-<div class="smallstats"><div class="pill"><span id="acLabel">RK</span> <strong id="ac"></strong></div><div class="pill"><span id="hpLabel">TP</span> <strong id="hp"></strong></div><div class="pill"><span id="pbLabel">ÜB</span> <strong id="pb"></strong></div><div class="pill"><span id="initLabel">Initiative</span> <strong id="init"></strong></div></div>
-<div id="stats" class="stats"></div></div>
-</div>
+  <div class="character-head">
+    <div class="portrait-column"><div class="portrait" id="portraitBox" onclick="openPlayerView()" style="cursor:pointer">Noch kein Portrait.<br><br><b>Antippen für Spieleransicht</b></div><div class="portrait-hint">Portrait antippen = Spieleransicht</div></div>
+    <div class="character-main">
+      <div class="name-row"><div><h2 class="name" id="name"></h2><div class="meta" id="meta"></div></div></div>
+      <div class="smallstats"><div class="pill"><span id="acLabel">RK</span><strong id="ac"></strong></div><div class="pill"><span id="hpLabel">TP</span><strong id="hp"></strong></div><div class="pill"><span id="pbLabel">ÜB</span><strong id="pb"></strong></div><div class="pill"><span id="initLabel">Initiative</span><strong id="init"></strong></div></div>
+      <div id="stats" class="stats"></div>
+    </div>
+  </div>
 
-<div class="sections">
-<div class="section"><h3>Erscheinung</h3><div id="appearance"></div><div style="margin-top:10px"><b>Kleidung:</b> <span id="clothing"></span></div></div>
-<div class="section"><h3>Persönlichkeit</h3><div id="personality"></div></div>
-<div class="section"><h3>Motivation</h3><div id="motivation"></div></div>
-<div class="section"><h3>Eigenart</h3><div id="quirk"></div></div>
-<div class="section"><h3>Ideal / Bindung / Makel</h3><div id="ibf" class="kv"></div></div>
-<div class="section"><h3>Geheimnis</h3><div id="secret"></div></div>
-<div class="section"><h3>Skills</h3><div id="skills"></div></div>
-<div class="section"><h3>Sprechweise</h3><div id="speech"></div></div>
-<div class="section full"><h3>Angriffe & Fähigkeiten</h3><div id="combat"></div></div>
-</div>
+  <div class="sheet-grid">
+    <div class="section sheet-card"><h3>📜 Erscheinung</h3><div id="appearance"></div><div style="margin-top:10px"><b>Kleidung:</b> <span id="clothing"></span></div></div>
+    <div class="section sheet-card"><h3>🎭 Persönlichkeit</h3><div id="personality"></div></div>
+    <div class="section sheet-card"><h3>⚖ Ideal / Bindung / Makel</h3><div id="ibf" class="kv"></div></div>
+    <div class="section sheet-card"><h3>🎯 Motivation</h3><div id="motivation"></div></div>
+    <div class="section sheet-card"><h3>💡 Eigenart</h3><div id="quirk"></div></div>
+    <div class="section sheet-card"><h3>🔒 Geheimnis</h3><div id="secret"></div></div>
+    <div class="section sheet-card"><h3>🧠 Skills</h3><div id="skills"></div></div>
+    <div class="section sheet-card"><h3>💬 Sprechweise</h3><div id="speech"></div></div>
+    <div class="section sheet-card"><h3>⚔ Angriffe & Fähigkeiten</h3><div id="combat"></div></div>
+  </div>
 
-<div class="section full" style="margin-top:12px"><h3>SL-Notizen & Beziehungen</h3>
-<div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-<div><label>Eingesetzt / Ort / Situation</label><input id="usedWhere" placeholder="z. B. Taverne, Everlund – Sitzung 12"></div>
-<div><label>Bekannt mit NSC</label><input id="knownNPCs" placeholder="z. B. Hauptmann Arvik; Mira Feldhain"></div>
-</div>
-<div style="margin-top:12px"><label>Freie SL-Notizen</label><textarea id="gmNotes" placeholder="Begegnungen mit der Gruppe, Versprechen, offene Aufgaben, Änderungen am Charakter ..."></textarea></div>
-<div class="note">Diese Angaben sind reine SL-Informationen und erscheinen niemals in der Spieleransicht.</div></div><div class="buttons"><button class="secondary" id="saveNpcButton" onclick="saveNPC()">☆ NPC speichern</button><button class="secondary" onclick="toggleEditMode()">✏ Bearbeiten</button><button class="secondary" onclick="regenerateNPC()">↻ Neu generieren</button><button class="secondary" onclick="generateImage()">🎨 Portrait generieren</button></div>
-<div id="saved" class="saved">✓ NPC gespeichert.</div><div id="imageStatus" class="note" style="margin-top:10px"></div>
-</div>
+  <div class="section full notes-card"><h3>SL-Notizen & Beziehungen</h3>
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px"><div><label>Eingesetzt / Ort / Situation</label><input id="usedWhere" placeholder="z. B. Taverne, Everlund – Sitzung 12"></div><div><label>Bekannt mit NSC</label><input id="knownNPCs" placeholder="z. B. Hauptmann Arvik; Mira Feldhain"></div></div>
+    <div style="margin-top:12px"><label>Freie SL-Notizen</label><textarea id="gmNotes" placeholder="Begegnungen mit der Gruppe, Versprechen, offene Aufgaben, Änderungen am Charakter ..."></textarea></div>
+    <div class="note">Diese Angaben sind reine SL-Informationen und erscheinen niemals in der Spieleransicht.</div>
+  </div>
+  <div class="action-bar"><button class="secondary" id="saveNpcButton" onclick="saveNPC()">☆ NPC speichern</button><button class="secondary" onclick="toggleEditMode()">✏ Bearbeiten</button><button class="secondary" onclick="regenerateNPC()">↻ Neu generieren</button><button class="secondary" onclick="generateImage()">🎨 Portrait generieren</button></div>
+  <div id="saved" class="saved">✓ NPC gespeichert.</div><div id="imageStatus" class="note"></div>
 </div>
 </div>
 
 <div id="libraryScreen" style="display:none">
-  <div class="card">
-    <div class="library-head"><div><h2 style="margin:0">📚 Gespeicherte NSC</h2><div class="note">Deine private Sammlung. Bei aktiver Cloud- und Google-Drive-Verbindung erscheinen hier auf Tablet und PC dieselben NSC samt Portraits.</div></div><div class="npcactions"><button class="secondary" onclick="forceLocalMigration()">⬆ Lokale NSC übernehmen</button><button class="secondary" onclick="changeSyncSecret()">☁ Verbindung</button><button class="secondary" onclick="showMainScreen()">← Zurück</button></div></div>
+  <div class="card library-card">
+    <div class="library-head"><div><h2 style="margin:0">▤ Gespeicherte NSC</h2><div class="note">Deine private Sammlung. Bei aktiver Cloud- und Google-Drive-Verbindung erscheinen hier auf Tablet und PC dieselben NSC samt Portraits.</div></div><div class="npcactions"><button class="secondary" onclick="forceLocalMigration()">⬆ Lokale NSC übernehmen</button><button class="secondary" onclick="changeSyncSecret()">☁ Verbindung</button><button class="secondary" onclick="showMainScreen()">← Zurück</button></div></div>
     <div id="librarySyncStatus" class="note" style="margin-bottom:10px"></div>
-    <div class="searchbox">
-      <input id="npcSearch" placeholder="Suche nach Name, Ort, Beruf, Volk, Notiz oder bekanntem NSC ..." oninput="renderSavedNPCs()">
-      <button class="secondary" onclick="renderSavedNPCs()">🔎 Suchen</button>
-    </div>
+    <div class="searchbox"><input id="npcSearch" placeholder="Suche nach Name, Ort, Beruf, Volk, Notiz oder bekanntem NSC ..." oninput="renderSavedNPCs()"><button class="secondary" onclick="renderSavedNPCs()">🔎 Suchen</button></div>
     <div id="npcList" class="npclist"></div>
   </div>
 </div>
-
+</div></div></div>
 <script>
 let currentNpcId=null;
 let currentPortraitData=null;
