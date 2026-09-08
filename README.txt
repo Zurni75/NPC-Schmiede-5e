@@ -1,6 +1,13 @@
-NPC-Schmiede v0.47.2
+NPC-Schmiede v0.47.3
 
-Neu in v0.47.2:
+Neu in v0.47.3:
+- Kontextabhängige Waffenwahl bei 5e: Setting, Volk/Körpergröße, Beruf und NPC-Rolle werden berücksichtigt.
+- Gnome/Halblinge erhalten keine unplausibel großen Waffen; Speere nur bei passender Rolle.
+- Zivilisten können unbewaffnet sein; eine Zweitwaffe ist nicht mehr zwingend.
+- Portrait-Prompt erhält die tatsächlich gewählte Bewaffnung, damit Bild und Werte zusammenpassen.
+
+Vorheriger Formatfix aus v0.47.2 bleibt enthalten:
+
 - Formatierungsfix für Ideal / Bindung / Makel, auch bei gespeicherten NSC.
 - Alte Speicherstände werden beim Laden wieder in drei saubere Zeilenblöcke zerlegt.
 
