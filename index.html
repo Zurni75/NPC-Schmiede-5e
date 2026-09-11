@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NSC-Schmiede v0.48.4</title>
+<title>NSC-Schmiede v0.48.5</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -102,6 +102,25 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
 .genre-tab.active{background:linear-gradient(180deg,#d6ad5a,#a87527);color:#1c140b;border-color:#efd18d;box-shadow:0 3px 12px rgba(0,0,0,.25)}
 .genre-tab .count{opacity:.75;font-size:.88em;margin-left:4px}
 @media(max-width:620px){.genre-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:9px}.genre-tab{white-space:nowrap;flex:0 0 auto}}
+
+/* v0.48.5 – dynamische Ganzseiten-Themes */
+body{--theme-image:url('/theme-fantasy.png');--theme-tint:rgba(4,8,12,.48);background:#070a0e!important;position:relative}
+body:after{content:"";position:fixed;inset:0;z-index:-3;background-image:linear-gradient(var(--theme-tint),var(--theme-tint)),var(--theme-image);background-position:center;background-size:cover;background-repeat:no-repeat;transition:opacity .35s ease,filter .35s ease;filter:saturate(.92) brightness(.82)}
+body:before{z-index:-2!important;opacity:.10!important}
+.app-shell{background:transparent!important}.app-main{background:transparent!important}.content{background:transparent!important}
+.side-nav{background:linear-gradient(180deg,rgba(7,11,16,.94),rgba(8,12,17,.86))!important;backdrop-filter:blur(8px)}
+header{background:linear-gradient(90deg,rgba(5,8,12,.90),rgba(5,8,12,.52),rgba(5,8,12,.82))!important;backdrop-filter:blur(3px)}
+.card{background:linear-gradient(145deg,rgba(20,27,36,.90),rgba(12,17,24,.91))!important;backdrop-filter:blur(8px)}
+.generator-card{background:linear-gradient(180deg,rgba(28,34,42,.90),rgba(15,20,27,.91))!important}
+#result.card,.library-card{background:linear-gradient(145deg,rgba(15,22,30,.91),rgba(8,13,19,.93))!important}
+.genre-tabs{gap:6px!important;margin:10px 0 10px!important}.genre-tab{padding:6px 10px!important;font-size:13px!important;min-height:0!important}
+body.theme-london{--theme-image:linear-gradient(135deg,#111820,#27313a 42%,#171719);--theme-tint:rgba(5,8,11,.18)}
+body.theme-america{--theme-image:linear-gradient(135deg,#17110d,#5b351e 45%,#15191e);--theme-tint:rgba(6,5,4,.18)}
+body.theme-wod{--theme-image:radial-gradient(circle at 70% 15%,#24293a,#10131a 40%,#08090c 78%);--theme-tint:rgba(2,3,6,.10)}
+body.theme-scifi{--theme-image:radial-gradient(circle at 72% 20%,#183c55,#0b1723 38%,#05080e 76%);--theme-tint:rgba(2,5,9,.12)}
+body.theme-neutral{--theme-image:radial-gradient(circle at 50% 0%,#263142,#0b1017 45%,#070a0f 100%);--theme-tint:rgba(3,5,8,.08)}
+@media(max-width:620px){body:after{background-position:center top}.genre-tab{padding:6px 9px!important;font-size:12px!important}}
+
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
@@ -114,7 +133,7 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
   <div class="side-art"><div class="side-quote">„Nicht jeder Fremde ist nur Statistik.“</div></div>
 </aside>
 <div class="app-main">
-<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.48.4</div></header>
+<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.48.5</div></header>
 <div class="content">
 <div id="mainScreen">
 <div class="card generator-card">
@@ -460,6 +479,19 @@ async function loadPortraitFromDrive(fileId){
 async function deletePortraitFromDrive(fileId){if(!fileId)return;try{const r=await driveRequest(`https://www.googleapis.com/drive/v3/files/${encodeURIComponent(fileId)}`,{method:'DELETE'});if(!r.ok&&r.status!==404)throw new Error('Drive-Löschen fehlgeschlagen.');}catch(e){console.warn(e);}}
 
 function randomPrompt(){const setting=(document.getElementById("setting").value||"").toLowerCase();const fantasy=setting.includes("fantasy")||setting.includes("mittelalter");document.getElementById("keywords").value=pick(fantasy?["alte Zwergin, Schmiedin, mürrisch","junger Elf, Spion, nervös","Halbork, Wirt, freundlich","Mensch, Priester, geheimnisvoll","Elfin, Jägerin, arrogant","Zwerg, Händler, misstrauisch"]:["ältere Ärztin, aufmerksam, verschlossen","junger Journalist, neugierig, nervös","Wirt, freundlich, kennt jedes Gerücht","Privatdetektivin, hartnäckig, misstrauisch","Händler, charmant, verschuldet","Polizistin, pflichtbewusst, skeptisch"])}
+function themeForSetting(value){
+  const s=String(value||"").toLowerCase().normalize("NFD").replace(/[\u0300-\u036f]/g,"");
+  if(/london|viktorian|victorian|1880|gaslicht|steampunk/.test(s))return "london";
+  if(/amerika|america|usa|1920|20er|noir|prohibition|arkham/.test(s))return "america";
+  if(/world of darkness|vampir|werwolf|werewolf|wod|gothic|urban horror/.test(s))return "wod";
+  if(/science fiction|sci[- ]?fi|cyberpunk|raum|space|mars|zukunft|future|starship|raumschiff/.test(s))return "scifi";
+  if(/fantasy|mittelalter|medieval|elf|zwerg|gnom|halbling|kormia|suhall|magie|ritter/.test(s))return "fantasy";
+  return "neutral";
+}
+function applySettingTheme(value){
+  const t=themeForSetting(value);document.body.classList.remove("theme-fantasy","theme-london","theme-america","theme-wod","theme-scifi","theme-neutral");document.body.classList.add("theme-"+t);
+}
+function initSettingTheme(){const el=document.getElementById("setting");if(!el)return;applySettingTheme(el.value);el.addEventListener("input",()=>applySettingTheme(el.value));el.addEventListener("change",()=>applySettingTheme(el.value));}
 function clearAll(){document.getElementById("keywords").value="";document.getElementById("result").style.display="none"}
 function getSavedNPCs(){
   try{return JSON.parse(localStorage.getItem("npcSchmiedeNPCs")||"[]")}catch(e){return[]}
@@ -585,7 +617,7 @@ function resetPortrait(){
 async function showLibrary(){
   document.getElementById("mainScreen").style.display="none";
   document.getElementById("libraryScreen").style.display="block";
-  await connectCloud(true); renderSavedNPCs(); window.scrollTo({top:0,behavior:"smooth"});
+  await connectCloud(true); renderSavedNPCs(); applySettingTheme(activeLibraryGenre==="__all__"?"":(document.querySelector(".genre-tab.active")?.textContent||"")); window.scrollTo({top:0,behavior:"smooth"});
 }
 function showMainScreen(){
   document.getElementById("libraryScreen").style.display="none";
@@ -663,7 +695,7 @@ function npcGenreLabel(n){
   return inferSettingFromMeta(n);
 }
 function npcGenreKey(n){return npcGenreLabel(n).toLocaleLowerCase("de-DE");}
-function setLibraryGenre(key){activeLibraryGenre=key;renderSavedNPCs();}
+function setLibraryGenre(key){activeLibraryGenre=key;renderSavedNPCs();applySettingTheme(key==="__all__"?"":(document.querySelector(".genre-tab.active")?.textContent||key));}
 function renderGenreTabs(base){
   const tabBox=document.getElementById("genreTabs"); if(!tabBox)return;
   const groups=new Map();
@@ -704,7 +736,7 @@ async function loadNPC(id){
   if(!n){currentPortraitDriveFileId=null;n=getSavedNPCs().find(x=>String(x.id)===String(id)); if(n)image=await loadPortrait(n.id);}
   if(!n)return;
   currentNpcId=n.id;
-  document.getElementById("system").value=(n.system==="d20"?"5e":(n.system||"5e")); document.getElementById("setting").value=inferSettingFromMeta(n);
+  document.getElementById("system").value=(n.system==="d20"?"5e":(n.system||"5e")); document.getElementById("setting").value=inferSettingFromMeta(n); applySettingTheme(document.getElementById("setting").value);
   document.getElementById("keywords").value=n.sourceKeywords||currentNpcFallbackKeywordsFromMeta(n.meta);
   if(n.sourceRole)document.getElementById("role").value=n.sourceRole;
   if(n.sourceGender)document.getElementById("gender").value=n.sourceGender;
@@ -746,6 +778,7 @@ async function generateImage(){
     status.textContent="✓ Portrait erzeugt. Antippen zeigt nur das Bild.";
   }catch(err){status.textContent="Fehler: "+err.message;}
 }
+initSettingTheme();
 renderSavedNPCs();
 updateSavedCount();
 initGoogleDrive();
