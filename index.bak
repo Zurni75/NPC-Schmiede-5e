@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NSC-Schmiede v0.48.4</title>
+<title>NSC-Schmiede v0.48.3</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -114,7 +114,7 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
   <div class="side-art"><div class="side-quote">„Nicht jeder Fremde ist nur Statistik.“</div></div>
 </aside>
 <div class="app-main">
-<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.48.4</div></header>
+<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.48.3</div></header>
 <div class="content">
 <div id="mainScreen">
 <div class="card generator-card">
@@ -645,22 +645,8 @@ async function saveNPC(){
   document.getElementById("saveNpcButton").textContent="💾 Änderungen speichern";
   renderSavedNPCs(); updateSavedCount();
 }
-function inferSettingFromMeta(n){
-  const direct=String(n?.setting||"").trim();
-  if(direct)return direct;
-  const parts=String(n?.meta||"").split(" · ").map(v=>v.trim()).filter(Boolean);
-  if(parts.length){
-    const last=parts[parts.length-1];
-    const system=String(n?.system||"").toLowerCase();
-    const systemLabels=["5e","d6","d10","opend6","w10"];
-    const looksLikeSystem=systemLabels.includes(last.toLowerCase());
-    const looksLikeCore=/^(?:männlich|weiblich|divers|\d+\s*jahre|level\s*\d+|erfahrungsstufe\s*\d+)$/i.test(last);
-    if(!looksLikeSystem&&!looksLikeCore&&parts.length>=6)return last;
-  }
-  return "Fantasy-Mittelalter";
-}
 function npcGenreLabel(n){
-  return inferSettingFromMeta(n);
+  return String(n?.setting||"Fantasy-Mittelalter").trim()||"Fantasy-Mittelalter";
 }
 function npcGenreKey(n){return npcGenreLabel(n).toLocaleLowerCase("de-DE");}
 function setLibraryGenre(key){activeLibraryGenre=key;renderSavedNPCs();}
@@ -704,7 +690,7 @@ async function loadNPC(id){
   if(!n){currentPortraitDriveFileId=null;n=getSavedNPCs().find(x=>String(x.id)===String(id)); if(n)image=await loadPortrait(n.id);}
   if(!n)return;
   currentNpcId=n.id;
-  document.getElementById("system").value=(n.system==="d20"?"5e":(n.system||"5e")); document.getElementById("setting").value=inferSettingFromMeta(n);
+  document.getElementById("system").value=(n.system==="d20"?"5e":(n.system||"5e")); document.getElementById("setting").value=n.setting||"Fantasy-Mittelalter";
   document.getElementById("keywords").value=n.sourceKeywords||currentNpcFallbackKeywordsFromMeta(n.meta);
   if(n.sourceRole)document.getElementById("role").value=n.sourceRole;
   if(n.sourceGender)document.getElementById("gender").value=n.sourceGender;
