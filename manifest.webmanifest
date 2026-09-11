@@ -1,7 +1,7 @@
 {
-  "name": "NPC-Schmiede 5e",
-  "short_name": "NPC-Schmiede",
-  "description": "Fantasy NPC Generator mit KI-Charakteren, Portraits und 5e-Werten",
+  "name": "NSC-Schmiede",
+  "short_name": "NSC-Schmiede",
+  "description": "NSC-Generator mit KI-Charakteren, Portraits und mehreren Regelsystemen",
   "start_url": "/",
   "scope": "/",
   "display": "standalone",
@@ -9,7 +9,17 @@
   "theme_color": "#0e1116",
   "orientation": "any",
   "icons": [
-    {"src":"/icon-192.png","sizes":"192x192","type":"image/png","purpose":"any maskable"},
-    {"src":"/icon-512.png","sizes":"512x512","type":"image/png","purpose":"any maskable"}
+    {
+      "src": "/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
+      "purpose": "any maskable"
+    }
   ]
 }

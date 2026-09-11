@@ -1,4 +1,4 @@
-NPC-Schmiede v0.48.1
+NSC-Schmiede v0.48.2
 
 Vollständiger Design-Umbau auf Basis von v0.48 / v0.47.4.
 - Feste Seitenleiste auf Desktop, kompakte Navigation auf Mobilgeräten
@@ -10,7 +10,7 @@ Vollständiger Design-Umbau auf Basis von v0.48 / v0.47.4.
 - Bestehende Generierungs-, Speicher-, Sync-, Waffen- und Regelmodul-Logik unverändert
 - Responsive Darstellung für Desktop, Tablet und Smartphone
 
-NPC-Schmiede v0.48
+NSC-Schmiede v0.48
 
 Optische Überarbeitung auf Basis von v0.47.4.
 - Atmosphärischer Kopfbereich mit eigener Grafik
@@ -20,7 +20,7 @@ Optische Überarbeitung auf Basis von v0.47.4.
 - Responsive Darstellung für Tablet/Smartphone
 - Keine Änderung an Generierungs-, Speicher-, Sync- oder Waffenlogik
 
-NPC-Schmiede v0.47.4
+NSC-Schmiede v0.47.4
 
 Neu in v0.47.4:
 - Kontextabhängige Waffenwahl bei 5e: Setting, Volk/Körpergröße, Beruf und NPC-Rolle werden berücksichtigt.
@@ -38,7 +38,7 @@ Basis aus v0.47.1:
 - Freies Feld „Setting / Welt / Epoche“ bleibt erhalten.
 - 5e behält die bisherigen sechs Attribute und lokalen Berechnungen.
 - D6 ist nun ein OpenD6-basiertes Regelprofil mit sechs Grundattributen, Würfel+Pip-Werten (z. B. 3D+1), passenden Fertigkeiten und Wundstufen.
-- D10 ist ein eigenes universelles NPC-Schmiede-Würfelpoolprofil mit sechs Attributen (1–5), Fertigkeiten (0–5), Attribut + Fertigkeit als W10-Pool und Erfolgen ab 7.
+- D10 ist ein eigenes universelles NSC-Schmiede-Würfelpoolprofil mit sechs Attributen (1–5), Fertigkeiten (0–5), Attribut + Fertigkeit als W10-Pool und Erfolgen ab 7.
 - Bei D6 und D10 heißt Level in der Oberfläche „Erfahrungsstufe“; 1–20 dient dort nur zur Kompetenz-Einordnung.
 - Alte D20-NSC werden beim Öffnen auf 5e zurückgeführt.
 - Cloud-Sync via Upstash und Portrait-Sync via Google Drive bleiben unverändert.
@@ -59,3 +59,6 @@ Fix v0.47.4:
 - „Neu generieren“ funktioniert jetzt auch bei geöffneten gespeicherten NSC.
 - Ursprüngliche Generierungsparameter werden mitgespeichert und beim Öffnen wiederhergestellt.
 - Bei älteren NSC ohne gespeicherte Stichworte werden Volk + Beruf aus den Metadaten als sinnvolle Fallback-Stichworte verwendet.
+
+
+Neu in v0.48.2: Gespeicherte NSC werden automatisch nach Setting/Welt/Epoche in Reitern gruppiert. Reiter entstehen nur aus tatsächlich vorhandenen NSC und verschwinden automatisch, sobald nach einer Korrektur kein NSC mehr diesem Setting zugeordnet ist.

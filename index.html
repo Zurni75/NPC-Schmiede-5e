@@ -5,11 +5,11 @@
 <meta name="theme-color" content="#0e1116">
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
-<meta name="apple-mobile-web-app-title" content="NPC-Schmiede">
+<meta name="apple-mobile-web-app-title" content="NSC-Schmiede">
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NPC-Schmiede v0.48.1</title>
+<title>NSC-Schmiede v0.48.3</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -50,7 +50,7 @@ button{background:linear-gradient(180deg,#e0b65b,#b9842e);color:#171006;border:1
 @media(max-width:850px){header{min-height:150px;padding:32px 24px}.wrap{padding:0 14px 30px}header{margin:0 -14px 18px}h1{font-size:40px}.hero{grid-template-columns:1fr}.portrait{max-width:320px;margin:auto}.name{text-align:center}.meta{text-align:center}.smallstats{justify-content:center}}
 @media(max-width:620px){header{min-height:135px;padding:26px 18px}h1{font-size:34px}.subtitle{font-size:14px}.badge{position:absolute;right:0;top:-10px}.name{font-size:34px}.section h3{font-size:20px}}
 
-/* v0.48.1 – vollständiger Charakterbogen-Umbau */
+/* v0.48.2 – vollständiger Charakterbogen-Umbau */
 body{overflow-x:hidden}
 .wrap{max-width:none!important;padding:0!important;margin:0!important}
 .app-shell{display:grid;grid-template-columns:210px minmax(0,1fr);min-height:100vh}
@@ -94,31 +94,39 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
 @media(max-width:900px){.app-shell{grid-template-columns:76px minmax(0,1fr)}.side-nav{padding:12px 8px}.side-brand{font-size:0;text-align:center;padding:10px 0}.side-brand:after{content:'⚒';font-size:26px}.nav-btn{justify-content:center;padding:12px 8px!important}.nav-btn span:last-child{display:none}.side-art{display:none}.character-head{grid-template-columns:1fr}.portrait-column{border-right:0;border-bottom:1px solid #5e492a}.portrait{max-width:260px}.name-row{text-align:center;display:block}.generator-card .formgrid{grid-template-columns:1fr 1fr}.status-drawer{grid-template-columns:1fr}.status-actions{min-width:0}}
 @media(max-width:620px){.app-shell{display:block}.side-nav{position:sticky;height:auto;top:0;flex-direction:row;align-items:center;border-right:0;border-bottom:1px solid #6e542c;padding:6px 8px}.side-brand,.side-art{display:none}.nav-btn{width:auto;flex:1}.nav-btn span:last-child{display:inline;font-size:12px}.nav-icon{font-size:17px;width:auto}.content{padding:10px 8px 28px}header{min-height:110px!important;padding:20px 14px!important}header h1{font-size:31px!important}.subtitle{font-size:12px!important}.generator-card .formgrid,.generator-card .buttons,.sheet-grid,.action-bar{grid-template-columns:1fr}.character-main{padding:16px}.name{font-size:34px!important}.stats{grid-template-columns:repeat(2,1fr)!important}.sheet-card.full,.sheet-card.double{grid-column:auto}.notes-card>div[style*="grid-template-columns"]{grid-template-columns:1fr!important}}
 
+
+/* v0.48.2 – Setting-Reiter in der NSC-Bibliothek */
+.genre-tabs{display:flex;gap:8px;flex-wrap:wrap;margin:14px 0 12px;padding-bottom:4px;border-bottom:1px solid rgba(179,132,54,.28)}
+.genre-tab{width:auto;padding:9px 14px;border-radius:999px;border:1px solid rgba(179,132,54,.42);background:rgba(40,31,22,.72);color:#e9dcc2;font-weight:700;cursor:pointer;box-shadow:none}
+.genre-tab:hover{border-color:#d5a94f;background:rgba(75,53,29,.78)}
+.genre-tab.active{background:linear-gradient(180deg,#d6ad5a,#a87527);color:#1c140b;border-color:#efd18d;box-shadow:0 3px 12px rgba(0,0,0,.25)}
+.genre-tab .count{opacity:.75;font-size:.88em;margin-left:4px}
+@media(max-width:620px){.genre-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:9px}.genre-tab{white-space:nowrap;flex:0 0 auto}}
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body><div class="wrap"><div class="app-shell">
 <aside class="side-nav">
-  <div class="side-brand">⚒ NPC-SCHMIEDE</div>
+  <div class="side-brand">⚒ NSC-SCHMIEDE</div>
   <button class="nav-btn active" onclick="showMainScreen();window.scrollTo({top:0,behavior:'smooth'})"><span class="nav-icon">⌂</span><span>Start</span></button>
   <button class="nav-btn" onclick="showMainScreen();clearAll();document.getElementById('keywords').focus()"><span class="nav-icon">＋</span><span>Neuer NSC</span></button>
   <button class="nav-btn" onclick="showLibrary()"><span class="nav-icon">▤</span><span>Gespeicherte NSC</span></button>
   <div class="side-art"><div class="side-quote">„Nicht jeder Fremde ist nur Statistik.“</div></div>
 </aside>
 <div class="app-main">
-<header><div><h1>NPC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.48.1</div></header>
+<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.48.3</div></header>
 <div class="content">
 <div id="mainScreen">
 <div class="card generator-card">
 <div class="formgrid">
 <div><label>1–3 Stichworte</label><input id="keywords" value="alte Zwergin, Schmiedin, mürrisch"></div>
-<div><label>Regelsystem</label><select id="system" onchange="updateLevelLabel()"><option value="5e">5e</option><option value="d6">D6 (OpenD6-basiert)</option><option value="d10">D10 (NPC-Schmiede)</option></select></div>
+<div><label>Regelsystem</label><select id="system" onchange="updateLevelLabel()"><option value="5e">5e</option><option value="d6">D6 (OpenD6-basiert)</option><option value="d10">D10 (NSC-Schmiede)</option></select></div>
 <div><label>Setting / Welt / Epoche</label><input id="setting" value="Fantasy-Mittelalter" placeholder="z. B. USA 1920, London 1880, Cyberpunk 2090"></div>
 <div><label id="levelLabel">Level</label><select id="level"><option value="random">Zufällig</option><option>1</option><option>2</option><option>3</option><option>4</option><option>5</option><option>6</option><option>7</option><option>8</option><option>9</option><option>10</option><option>11</option><option>12</option><option>13</option><option>14</option><option>15</option><option>16</option><option>17</option><option>18</option><option>19</option><option>20</option></select></div>
-<div><label>NPC-Typ</label><select id="role"><option>Normaler NPC</option><option>Wichtiger NPC</option><option>Gegner</option></select></div>
+<div><label>NSC-Typ</label><select id="role"><option>Normaler NSC</option><option>Wichtiger NSC</option><option>Gegner</option></select></div>
 <div><label>Geschlecht</label><select id="gender"><option>Zufällig</option><option>Weiblich</option><option>Männlich</option><option>Divers</option></select></div>
 </div>
-<div class="buttons"><button id="generateNpcButton" onclick="generateNPC()">✒ NPC generieren</button><button class="secondary" onclick="randomPrompt()">🎲 Stichworte</button><button class="secondary" onclick="clearAll()">Leeren</button><button class="secondary" onclick="showLibrary()">▤ Gespeicherte NSC <span id="savedCount"></span></button></div>
+<div class="buttons"><button id="generateNpcButton" onclick="generateNPC()">✒ NSC generieren</button><button class="secondary" onclick="randomPrompt()">🎲 Stichworte</button><button class="secondary" onclick="clearAll()">Leeren</button><button class="secondary" onclick="showLibrary()">▤ Gespeicherte NSC <span id="savedCount"></span></button></div>
 <div class="status-drawer"><div class="status-copy"><div class="api"><b>KI aktiv:</b> Kreative Charaktertexte werden passend zum frei eingegebenen Setting erzeugt. Regel- und Kampfwerte berechnet die App lokal. Portraits entstehen nur auf Knopfdruck.</div><div id="driveStatus" class="note">Google Drive noch nicht verbunden.</div><div id="syncStatus" class="note"></div><div id="npcStatus" class="note"></div></div><div class="status-actions"><button class="secondary" id="googleDriveButton" onclick="connectGoogleDrive()">🔗 Google Drive verbinden</button></div></div>
 </div>
 
@@ -149,8 +157,8 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
     <div style="margin-top:12px"><label>Freie SL-Notizen</label><textarea id="gmNotes" placeholder="Begegnungen mit der Gruppe, Versprechen, offene Aufgaben, Änderungen am Charakter ..."></textarea></div>
     <div class="note">Diese Angaben sind reine SL-Informationen und erscheinen niemals in der Spieleransicht.</div>
   </div>
-  <div class="action-bar"><button class="secondary" id="saveNpcButton" onclick="saveNPC()">☆ NPC speichern</button><button class="secondary" onclick="toggleEditMode()">✏ Bearbeiten</button><button class="secondary" onclick="regenerateNPC()">↻ Neu generieren</button><button class="secondary" onclick="generateImage()">🎨 Portrait generieren</button></div>
-  <div id="saved" class="saved">✓ NPC gespeichert.</div><div id="imageStatus" class="note"></div>
+  <div class="action-bar"><button class="secondary" id="saveNpcButton" onclick="saveNPC()">☆ NSC speichern</button><button class="secondary" onclick="toggleEditMode()">✏ Bearbeiten</button><button class="secondary" onclick="regenerateNPC()">↻ Neu generieren</button><button class="secondary" onclick="generateImage()">🎨 Portrait generieren</button></div>
+  <div id="saved" class="saved">✓ NSC gespeichert.</div><div id="imageStatus" class="note"></div>
 </div>
 </div>
 
@@ -158,7 +166,8 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
   <div class="card library-card">
     <div class="library-head"><div><h2 style="margin:0">▤ Gespeicherte NSC</h2><div class="note">Deine private Sammlung. Bei aktiver Cloud- und Google-Drive-Verbindung erscheinen hier auf Tablet und PC dieselben NSC samt Portraits.</div></div><div class="npcactions"><button class="secondary" onclick="forceLocalMigration()">⬆ Lokale NSC übernehmen</button><button class="secondary" onclick="changeSyncSecret()">☁ Verbindung</button><button class="secondary" onclick="showMainScreen()">← Zurück</button></div></div>
     <div id="librarySyncStatus" class="note" style="margin-bottom:10px"></div>
-    <div class="searchbox"><input id="npcSearch" placeholder="Suche nach Name, Ort, Beruf, Volk, Notiz oder bekanntem NSC ..." oninput="renderSavedNPCs()"><button class="secondary" onclick="renderSavedNPCs()">🔎 Suchen</button></div>
+    <div id="genreTabs" class="genre-tabs" aria-label="NSC nach Setting gruppieren"></div>
+    <div class="searchbox"><input id="npcSearch" placeholder="Im gewählten Setting suchen: Name, Ort, Beruf, Volk, Notiz ..." oninput="renderSavedNPCs()"><button class="secondary" onclick="renderSavedNPCs()">🔎 Suchen</button></div>
     <div id="npcList" class="npclist"></div>
   </div>
 </div>
@@ -172,6 +181,7 @@ let googleTokenClient=null;
 let googleClientId=null;
 const DRIVE_SCOPE="https://www.googleapis.com/auth/drive.file";
 let editMode=false;
+let activeLibraryGenre="__all__";
 
 const D={
 names:{zwerg:["Bromira Eisenhand","Dagna Kupferbart","Hilda Runenfaust","Brunna Erzgriff","Thorin Graufels","Marn Eisenkessel"],elf:["Lyriana Valeth","Serelis Vaelor","Aelwyn Farnblatt","Nerys Mondhain","Caelion Silberblatt","Mireth Morgenhain"],ork:["Grakka Eisenkinn","Rukha Aschfaust","Morga Rotzahn","Korga Schwarzfaust","Brakka Steinbrecher","Urga Graumond"],mensch:["Mira Feldhain","Talia Brenn","Sera Dorn","Harlan Voss","Edric Falk","Corvin Heller"],default:["Ravel Dorn","Sera Nachtwind","Corvin Falk","Mira Dornhain","Tarek Voss","Lysa Krähenfeder"]},
@@ -277,7 +287,7 @@ async function generateNPC(){
 
     currentNpcId=null; currentPortraitData=null; currentPortraitDriveFileId=null;
     setEditMode(false);
-    document.getElementById("saveNpcButton").textContent="☆ NPC speichern";
+    document.getElementById("saveNpcButton").textContent="☆ NSC speichern";
     resetPortrait();
     document.getElementById("imageStatus").textContent="";
     document.getElementById("result").style.display="block";document.getElementById("saved").style.display="none";
@@ -320,7 +330,7 @@ function fallback5eWeapons(npc,setting,role){
   if(caster)return {primary:small?"Dolch":"Kampfstab",secondary:"Keine"};
   if(rogue)return {primary:"Kurzschwert",secondary:"Dolch"};
   if(hunter)return {primary:small?"Kurzbogen":"Langbogen",secondary:small?"Dolch":"Kurzschwert"};
-  if(civilian&&role==="Normaler NPC")return {primary:small?"Dolch":pick(["Dolch","Knüppel","Keine"]),secondary:"Keine"};
+  if(civilian&&role==="Normaler NSC")return {primary:small?"Dolch":pick(["Dolch","Knüppel","Keine"]),secondary:"Keine"};
   if(small)return {primary:pick(["Kurzschwert","Dolch","Handbeil","Leichte Armbrust","Schleuder"]),secondary:pick(["Dolch","Schleuder","Keine"])};
   if(martial||role==="Gegner")return {primary:pick(["Langschwert","Streitaxt","Kriegshammer","Streitkolben","Speer"]),secondary:pick(["Kurzbogen","Leichte Armbrust","Dolch","Keine"])};
   return {primary:pick(["Dolch","Kurzschwert","Kampfstab","Keine"]),secondary:"Keine"};
@@ -371,7 +381,7 @@ function pipText(pips){
 }
 function d6Tier(level){return level<=4?0:level<=8?1:level<=12?2:level<=16?3:4;}
 function buildD6Mechanics(level,role,npc){
-  const tier=d6Tier(level), important=role!=="Normaler NPC"?1:0;
+  const tier=d6Tier(level), important=role!=="Normaler NSC"?1:0;
   const labs=["GES","WIS","WAH","STÄ","TEC","MEC"];
   let base=[7,7,7,7,6,6];
   for(let i=0;i<tier;i++)base[(i*2+Math.floor(Math.random()*base.length))%base.length]++;
@@ -384,21 +394,21 @@ function buildD6Mechanics(level,role,npc){
   const resist=base[3]+(role==="Gegner"?2:0);
   const init=base[2]+tier;
   const special=role==="Gegner"?"Einmal pro Szene darf der NSC einen passenden Fertigkeitswurf um +1D erhöhen.":"Einmal pro Szene darf der NSC eine passende Berufs- oder Kontaktprobe um +1D erhöhen.";
-  return {levelText:`Erfahrungsstufe ${level}`,labels:["Widerstand","Wunden","Kompetenz","Initiative"],summary:[pipText(resist),"Wundstufen",["Anfänger","Erfahren","Profi","Elite","Meister"][tier],pipText(init)],stats:labs.map((x,i)=>({label:x,value:pipText(base[i]),extra:"Grundattribut"})),skills,combat:`<b>D6-Regelprofil:</b> OpenD6-basiert<br><br><b>Typischer Angriff / Hauptaktion:</b> ${pipText(attack)}<br><b>Schadenswiderstand:</b> ${pipText(resist)}<br><b>Wunden:</b> Betäubt → Verwundet → Schwer verwundet → Außer Gefecht<br><br><b>Besondere Fähigkeit:</b> ${special}<br><br><span style="color:#aaa">Werte werden als Würfel und Pips dargestellt: 2D → 2D+1 → 2D+2 → 3D. Die Erfahrungsstufe 1–20 ist eine NPC-Schmiede-Hilfe zur Einordnung der Kompetenz und kein OpenD6-Level.</span>`};
+  return {levelText:`Erfahrungsstufe ${level}`,labels:["Widerstand","Wunden","Kompetenz","Initiative"],summary:[pipText(resist),"Wundstufen",["Anfänger","Erfahren","Profi","Elite","Meister"][tier],pipText(init)],stats:labs.map((x,i)=>({label:x,value:pipText(base[i]),extra:"Grundattribut"})),skills,combat:`<b>D6-Regelprofil:</b> OpenD6-basiert<br><br><b>Typischer Angriff / Hauptaktion:</b> ${pipText(attack)}<br><b>Schadenswiderstand:</b> ${pipText(resist)}<br><b>Wunden:</b> Betäubt → Verwundet → Schwer verwundet → Außer Gefecht<br><br><b>Besondere Fähigkeit:</b> ${special}<br><br><span style="color:#aaa">Werte werden als Würfel und Pips dargestellt: 2D → 2D+1 → 2D+2 → 3D. Die Erfahrungsstufe 1–20 ist eine NSC-Schmiede-Hilfe zur Einordnung der Kompetenz und kein OpenD6-Level.</span>`};
 }
 function d10Tier(level){return level<=4?0:level<=8?1:level<=12?2:level<=16?3:4;}
 function buildD10Mechanics(level,role,npc){
   const tier=d10Tier(level), labs=["KÖR","GES","VER","WAH","PRÄ","WIL"];
   let vals=[2,2,2,3,3,3].sort(()=>Math.random()-.5);
   for(let i=0;i<tier;i++)vals[(i+Math.floor(Math.random()*6))%6]=Math.min(5,vals[(i+Math.floor(Math.random()*6))%6]+1);
-  if(role==="Wichtiger NPC"||role==="Gegner")vals[Math.floor(Math.random()*6)]=Math.min(5,Math.max(4,vals[Math.floor(Math.random()*6)]||3));
+  if(role==="Wichtiger NSC"||role==="Gegner")vals[Math.floor(Math.random()*6)]=Math.min(5,Math.max(4,vals[Math.floor(Math.random()*6)]||3));
   const skillNames=(npc.skills||[]).slice(0,4);
-  const skillRanks=skillNames.map((_,i)=>Math.min(5,1+tier+(i<2?1:0)+(role==="Wichtiger NPC"&&i===0?1:0)));
+  const skillRanks=skillNames.map((_,i)=>Math.min(5,1+tier+(i<2?1:0)+(role==="Wichtiger NSC"&&i===0?1:0)));
   const skills=skillNames.map((skill,i)=>{const a=vals[i%6],r=skillRanks[i],pool=a+r;return `${skill}: <b>${r}</b> (${pool}W10)`;}).join("<br>");
   const attack=Math.min(10,vals[1]+skillRanks[0]+(role==="Gegner"?1:0));
   const defense=1+Math.floor((vals[1]+vals[3])/2)+(role==="Gegner"?1:0), wounds=3+vals[0]+vals[5];
   const special=role==="Gegner"?"Einmal pro Szene +2W10 auf eine passende Aktion.":"Einmal pro Szene +1W10 auf eine passende Berufs- oder Kontaktprobe.";
-  return {levelText:`Erfahrungsstufe ${level}`,labels:["Abwehr","Ausdauer","Kompetenz","Initiative"],summary:[defense,wounds,["Anfänger","Erfahren","Profi","Elite","Meister"][tier],`${vals[1]+vals[3]}W10`],stats:labs.map((x,i)=>({label:x,value:vals[i],extra:"1–5"})),skills,combat:`<b>D10-Regelprofil:</b> NPC-Schmiede Würfelpool<br><br><b>Probe:</b> Attribut + Fertigkeit = Anzahl W10<br><b>7–9:</b> 1 Erfolg &nbsp; · &nbsp; <b>10:</b> 2 Erfolge<br><b>Schwierigkeit:</b> 1 einfach · 2 normal · 3 schwierig · 4 sehr schwierig · 5 außergewöhnlich<br><br><b>Typischer Angriff / Hauptaktion:</b> ${attack}W10<br><b>Abwehr:</b> ${defense}<br><b>Ausdauer:</b> ${wounds}<br><br><b>Besondere Fähigkeit:</b> ${special}<br><br><span style="color:#aaa">Dieses D10-Profil ist ein eigenes universelles Regelprofil der NPC-Schmiede.</span>`};
+  return {levelText:`Erfahrungsstufe ${level}`,labels:["Abwehr","Ausdauer","Kompetenz","Initiative"],summary:[defense,wounds,["Anfänger","Erfahren","Profi","Elite","Meister"][tier],`${vals[1]+vals[3]}W10`],stats:labs.map((x,i)=>({label:x,value:vals[i],extra:"1–5"})),skills,combat:`<b>D10-Regelprofil:</b> NSC-Schmiede Würfelpool<br><br><b>Probe:</b> Attribut + Fertigkeit = Anzahl W10<br><b>7–9:</b> 1 Erfolg &nbsp; · &nbsp; <b>10:</b> 2 Erfolge<br><b>Schwierigkeit:</b> 1 einfach · 2 normal · 3 schwierig · 4 sehr schwierig · 5 außergewöhnlich<br><br><b>Typischer Angriff / Hauptaktion:</b> ${attack}W10<br><b>Abwehr:</b> ${defense}<br><b>Ausdauer:</b> ${wounds}<br><br><b>Besondere Fähigkeit:</b> ${special}<br><br><span style="color:#aaa">Dieses D10-Profil ist ein eigenes universelles Regelprofil der NSC-Schmiede.</span>`};
 }
 async function initGoogleDrive(){
   try{
@@ -626,7 +636,7 @@ async function saveNPC(){
     await cloudFetch('/api/sync-npcs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({npc,portraitDriveFileId:currentPortraitDriveFileId,clearLegacyPortrait:Boolean(currentPortraitDriveFileId)})});
     mirrorLocalNPC(npc,currentPortraitData);
     await connectCloud(false);
-    document.getElementById("saved").textContent=existed?"✓ Änderungen gespeichert und synchronisiert.":"✓ NPC gespeichert und synchronisiert.";
+    document.getElementById("saved").textContent=existed?"✓ Änderungen gespeichert und synchronisiert.":"✓ NSC gespeichert und synchronisiert.";
   }catch(e){
     mirrorLocalNPC(npc,currentPortraitData);
     document.getElementById("saved").textContent="⚠ Cloud nicht erreichbar – lokal gesichert. "+e.message;
@@ -635,13 +645,29 @@ async function saveNPC(){
   document.getElementById("saveNpcButton").textContent="💾 Änderungen speichern";
   renderSavedNPCs(); updateSavedCount();
 }
+function npcGenreLabel(n){
+  return String(n?.setting||"Fantasy-Mittelalter").trim()||"Fantasy-Mittelalter";
+}
+function npcGenreKey(n){return npcGenreLabel(n).toLocaleLowerCase("de-DE");}
+function setLibraryGenre(key){activeLibraryGenre=key;renderSavedNPCs();}
+function renderGenreTabs(base){
+  const tabBox=document.getElementById("genreTabs"); if(!tabBox)return;
+  const groups=new Map();
+  base.forEach(n=>{const key=npcGenreKey(n), label=npcGenreLabel(n);if(!groups.has(key))groups.set(key,{label,count:0});groups.get(key).count++;});
+  if(activeLibraryGenre!=="__all__"&&!groups.has(activeLibraryGenre))activeLibraryGenre="__all__";
+  const ordered=[...groups.entries()].sort((a,b)=>a[1].label.localeCompare(b[1].label,"de",{sensitivity:"base"}));
+  const all=`<button class="genre-tab ${activeLibraryGenre==="__all__"?"active":""}" onclick="setLibraryGenre('__all__')">Alle <span class="count">${base.length}</span></button>`;
+  tabBox.innerHTML=all+ordered.map(([key,g])=>`<button class="genre-tab ${activeLibraryGenre===key?"active":""}" onclick="setLibraryGenre(${JSON.stringify(key)})">${escapeHtml(g.label)} <span class="count">${g.count}</span></button>`).join("");
+}
 function renderSavedNPCs(){
   const q=(document.getElementById("npcSearch")?.value||"").toLowerCase().trim();
   const base=cloudReady?cloudNpcIndex:getSavedNPCs();
-  const list=base.filter(n=>JSON.stringify(n).toLowerCase().includes(q));
+  renderGenreTabs(base);
+  let list=activeLibraryGenre==="__all__"?base:base.filter(n=>npcGenreKey(n)===activeLibraryGenre);
+  if(q)list=list.filter(n=>JSON.stringify(n).toLowerCase().includes(q));
   const box=document.getElementById("npcList"); if(!box)return;
-  if(!list.length){box.innerHTML='<div class="note">Keine passenden gespeicherten NSC gefunden.</div>';return;}
-  box.innerHTML=list.map(n=>`<div class="npcrow"><div><b>${escapeHtml(n.name||'Unbenannter NSC')}</b><small>${escapeHtml(n.meta||'')}</small><small>${n.usedWhere?"Eingesetzt: "+escapeHtml(n.usedWhere):"Noch kein Einsatzort eingetragen"}</small></div><div class="npcactions"><button class="secondary" onclick="loadNPC('${String(n.id).replace(/'/g,"\\'")}')">Öffnen & bearbeiten</button><button class="secondary danger" onclick="deleteNPC('${String(n.id).replace(/'/g,"\\'")}')">🗑 Löschen</button></div></div>`).join("");
+  if(!list.length){box.innerHTML='<div class="note">Keine passenden gespeicherten NSC in diesem Setting gefunden.</div>';return;}
+  box.innerHTML=list.map(n=>`<div class="npcrow"><div><b>${escapeHtml(n.name||'Unbenannter NSC')}</b><small>${escapeHtml(n.meta||'')}</small><small><strong>${escapeHtml(npcGenreLabel(n))}</strong>${n.usedWhere?" · Eingesetzt: "+escapeHtml(n.usedWhere):" · Noch kein Einsatzort eingetragen"}</small></div><div class="npcactions"><button class="secondary" onclick="loadNPC('${String(n.id).replace(/'/g,"\\'")}')">Öffnen & bearbeiten</button><button class="secondary danger" onclick="deleteNPC('${String(n.id).replace(/'/g,"\\'")}')">🗑 Löschen</button></div></div>`).join("");
 }
 function escapeHtml(v){return String(v??'').replace(/[&<>"']/g,m=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[m]));}
 async function deleteNPC(id){
