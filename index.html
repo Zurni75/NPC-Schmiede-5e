@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NSC-Schmiede v0.48.6</title>
+<title>NSC-Schmiede v0.48.7</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -103,7 +103,7 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
 .genre-tab .count{opacity:.75;font-size:.88em;margin-left:4px}
 @media(max-width:620px){.genre-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:9px}.genre-tab{white-space:nowrap;flex:0 0 auto}}
 
-/* v0.48.6 – echte Ganzseiten-Hintergründe je Setting */
+/* v0.48.7 – echte Ganzseiten-Hintergründe je Setting */
 body{
   --theme-bg:url('/theme-fantasy.jpg');
   --theme-shade:rgba(3,6,10,.48);
@@ -139,15 +139,9 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 <script src="https://accounts.google.com/gsi/client" async defer></script>
 </head>
 <body><div class="wrap"><div class="app-shell">
-<aside class="side-nav">
-  <div class="side-brand">⚒ NSC-SCHMIEDE</div>
-  <button class="nav-btn active" onclick="showMainScreen();window.scrollTo({top:0,behavior:'smooth'})"><span class="nav-icon">⌂</span><span>Start</span></button>
-  <button class="nav-btn" onclick="showMainScreen();clearAll();document.getElementById('keywords').focus()"><span class="nav-icon">＋</span><span>Neuer NSC</span></button>
-  <button class="nav-btn" onclick="showLibrary()"><span class="nav-icon">▤</span><span>Gespeicherte NSC</span></button>
-  <div class="side-art"><div class="side-quote">„Nicht jeder Fremde ist nur Statistik.“</div></div>
-</aside>
+
 <div class="app-main">
-<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.48.6</div></header>
+<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.48.7</div></header>
 <div class="content">
 <div id="mainScreen">
 <div class="card generator-card">
@@ -717,7 +711,8 @@ function renderGenreTabs(base){
   if(activeLibraryGenre!=="__all__"&&!groups.has(activeLibraryGenre))activeLibraryGenre="__all__";
   const ordered=[...groups.entries()].sort((a,b)=>a[1].label.localeCompare(b[1].label,"de",{sensitivity:"base"}));
   const all=`<button class="genre-tab ${activeLibraryGenre==="__all__"?"active":""}" onclick="setLibraryGenre('__all__')">Alle <span class="count">${base.length}</span></button>`;
-  tabBox.innerHTML=all+ordered.map(([key,g])=>`<button class="genre-tab ${activeLibraryGenre===key?"active":""}" onclick="setLibraryGenre(${JSON.stringify(key)})">${escapeHtml(g.label)} <span class="count">${g.count}</span></button>`).join("");
+  tabBox.innerHTML=all+ordered.map(([key,g])=>`<button class="genre-tab ${activeLibraryGenre===key?"active":""}" data-genre="${escapeHtml(key)}">${escapeHtml(g.label)} <span class="count">${g.count}</span></button>`).join("");
+  tabBox.querySelectorAll(".genre-tab[data-genre]").forEach(btn=>btn.addEventListener("click",()=>setLibraryGenre(btn.dataset.genre)));
 }
 function renderSavedNPCs(){
   const q=(document.getElementById("npcSearch")?.value||"").toLowerCase().trim();
@@ -810,3 +805,13 @@ align-items:center;justify-content:center;padding:0;cursor:pointer">
   </div>
 </div>
 </body></html>
+<style id="v0487-fixes">
+/* v0.48.7 – Seitenleiste entfernt, Bibliotheks-Reiter repariert */
+.app-shell{display:block!important;min-height:100vh!important}
+.app-main{width:100%!important;min-width:0!important}
+.side-nav,.side-art,.side-quote{display:none!important}
+header{padding-left:clamp(18px,3vw,42px)!important;padding-right:clamp(18px,3vw,42px)!important}
+.content{padding-left:clamp(12px,2.5vw,34px)!important;padding-right:clamp(12px,2.5vw,34px)!important}
+.library-card{max-width:1400px!important}
+@media(max-width:900px){.app-shell{display:block!important}.content{padding:12px 10px 30px!important}}
+</style>
