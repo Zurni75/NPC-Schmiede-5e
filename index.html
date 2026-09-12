@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NSC-Schmiede v0.48.5</title>
+<title>NSC-Schmiede v0.48.6</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -103,23 +103,37 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
 .genre-tab .count{opacity:.75;font-size:.88em;margin-left:4px}
 @media(max-width:620px){.genre-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:9px}.genre-tab{white-space:nowrap;flex:0 0 auto}}
 
-/* v0.48.5 – dynamische Ganzseiten-Themes */
-body{--theme-image:url('/theme-fantasy.png');--theme-tint:rgba(4,8,12,.48);background:#070a0e!important;position:relative}
-body:after{content:"";position:fixed;inset:0;z-index:-3;background-image:linear-gradient(var(--theme-tint),var(--theme-tint)),var(--theme-image);background-position:center;background-size:cover;background-repeat:no-repeat;transition:opacity .35s ease,filter .35s ease;filter:saturate(.92) brightness(.82)}
-body:before{z-index:-2!important;opacity:.10!important}
-.app-shell{background:transparent!important}.app-main{background:transparent!important}.content{background:transparent!important}
-.side-nav{background:linear-gradient(180deg,rgba(7,11,16,.94),rgba(8,12,17,.86))!important;backdrop-filter:blur(8px)}
-header{background:linear-gradient(90deg,rgba(5,8,12,.90),rgba(5,8,12,.52),rgba(5,8,12,.82))!important;backdrop-filter:blur(3px)}
-.card{background:linear-gradient(145deg,rgba(20,27,36,.90),rgba(12,17,24,.91))!important;backdrop-filter:blur(8px)}
-.generator-card{background:linear-gradient(180deg,rgba(28,34,42,.90),rgba(15,20,27,.91))!important}
-#result.card,.library-card{background:linear-gradient(145deg,rgba(15,22,30,.91),rgba(8,13,19,.93))!important}
-.genre-tabs{gap:6px!important;margin:10px 0 10px!important}.genre-tab{padding:6px 10px!important;font-size:13px!important;min-height:0!important}
-body.theme-london{--theme-image:linear-gradient(135deg,#111820,#27313a 42%,#171719);--theme-tint:rgba(5,8,11,.18)}
-body.theme-america{--theme-image:linear-gradient(135deg,#17110d,#5b351e 45%,#15191e);--theme-tint:rgba(6,5,4,.18)}
-body.theme-wod{--theme-image:radial-gradient(circle at 70% 15%,#24293a,#10131a 40%,#08090c 78%);--theme-tint:rgba(2,3,6,.10)}
-body.theme-scifi{--theme-image:radial-gradient(circle at 72% 20%,#183c55,#0b1723 38%,#05080e 76%);--theme-tint:rgba(2,5,9,.12)}
-body.theme-neutral{--theme-image:radial-gradient(circle at 50% 0%,#263142,#0b1017 45%,#070a0f 100%);--theme-tint:rgba(3,5,8,.08)}
-@media(max-width:620px){body:after{background-position:center top}.genre-tab{padding:6px 9px!important;font-size:12px!important}}
+/* v0.48.6 – echte Ganzseiten-Hintergründe je Setting */
+body{
+  --theme-bg:url('/theme-fantasy.jpg');
+  --theme-shade:rgba(3,6,10,.48);
+  background-image:linear-gradient(var(--theme-shade),var(--theme-shade)),var(--theme-bg)!important;
+  background-position:center center!important;
+  background-size:cover!important;
+  background-repeat:no-repeat!important;
+  background-attachment:fixed!important;
+  background-color:#070a0e!important;
+  position:relative;
+  min-height:100vh;
+}
+body:before{opacity:.08!important;z-index:0!important}
+body:after{display:none!important}
+.app-shell,.app-main,.content{background:transparent!important;position:relative;z-index:1}
+.side-nav{background:linear-gradient(180deg,rgba(7,11,16,.91),rgba(8,12,17,.82))!important;backdrop-filter:blur(7px)}
+header{background:linear-gradient(90deg,rgba(5,8,12,.88),rgba(5,8,12,.46),rgba(5,8,12,.75))!important;backdrop-filter:blur(3px)}
+.card{background:linear-gradient(145deg,rgba(20,27,36,.86),rgba(12,17,24,.88))!important;backdrop-filter:blur(7px)}
+.generator-card{background:linear-gradient(180deg,rgba(24,30,38,.88),rgba(14,19,26,.90))!important;color:var(--text)!important}
+.generator-card label{color:#ecd08f!important}.generator-card input,.generator-card select{background:rgba(14,20,27,.90)!important;color:var(--text)!important;border-color:#4a5664!important}
+#result.card,.library-card{background:linear-gradient(145deg,rgba(15,22,30,.88),rgba(8,13,19,.91))!important}
+body.theme-fantasy{--theme-bg:url('/theme-fantasy.jpg');--theme-shade:rgba(3,6,10,.44)}
+body.theme-london{--theme-bg:url('/theme-london.jpg');--theme-shade:rgba(4,7,10,.50)}
+body.theme-america{--theme-bg:url('/theme-america.jpg');--theme-shade:rgba(8,5,3,.44)}
+body.theme-wod{--theme-bg:url('/theme-wod.jpg');--theme-shade:rgba(3,3,7,.53)}
+body.theme-scifi{--theme-bg:url('/theme-scifi.jpg');--theme-shade:rgba(2,6,10,.46)}
+body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5,.52)}
+.genre-tabs{gap:7px!important;margin:8px 0 10px!important;padding-bottom:5px!important}
+.genre-tab{padding:6px 10px!important;font-size:12px!important;line-height:1.1!important}
+@media(max-width:620px){body{background-attachment:scroll!important;background-position:center top!important}.genre-tab{padding:5px 8px!important;font-size:11px!important}}
 
 </style>
 <script src="https://accounts.google.com/gsi/client" async defer></script>
@@ -133,7 +147,7 @@ body.theme-neutral{--theme-image:radial-gradient(circle at 50% 0%,#263142,#0b101
   <div class="side-art"><div class="side-quote">„Nicht jeder Fremde ist nur Statistik.“</div></div>
 </aside>
 <div class="app-main">
-<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.48.5</div></header>
+<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.48.6</div></header>
 <div class="content">
 <div id="mainScreen">
 <div class="card generator-card">
