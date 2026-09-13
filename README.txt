@@ -80,3 +80,10 @@ v0.49.0:
 - Das komplette erzeugte 8K-Bild wird über den gesamten sichtbaren Monitor gelegt (100vw × 100vh).
 - Dadurch ist immer das vollständige Motiv sichtbar; die Setting-Reiter mit Mini-Hintergründen bleiben erhalten.
 - Sonstige Funktionen und Layout unverändert gegenüber v0.48.9.
+
+
+v0.49.1:
+- Fantasy-Hintergrund durch das vollständige neu erzeugte Motiv ersetzt.
+- Neue Themes: Horror und Wilder Westen.
+- Hintergrund proportional per cover statt verzerrt dargestellt.
+- Bebilderte Setting-Schnellauswahl ergänzt.
