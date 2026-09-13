@@ -107,3 +107,9 @@ v0.49.4:
 - Initiative ist jetzt ein Zahlenwert statt eines fälschlichen W10-Pools.
 - Beruf/Archetyp beeinflusst passende Kernattribute.
 - Bestehende 5e- und OpenD6-Logik unverändert.
+
+
+v0.49.5:
+- Gespeicherte D10-NSC werden beim Öffnen automatisch auf D10-v2 neu berechnet.
+- Alte Initiative-Werte wie 4W10 verschwinden.
+- Nach Änderungen speichern wird der neue Stand dauerhaft gesichert.
