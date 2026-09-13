@@ -64,6 +64,12 @@ Fix v0.47.4:
 Neu in v0.48.2: Gespeicherte NSC werden automatisch nach Setting/Welt/Epoche in Reitern gruppiert. Reiter entstehen nur aus tatsächlich vorhandenen NSC und verschwinden automatisch, sobald nach einer Korrektur kein NSC mehr diesem Setting zugeordnet ist.
 
 
-v0.48.8:
+v0.48.9:
 - Theme-Hintergründe auf 3840×2160 hochskaliert und leicht nachgeschärft.
 - Layout und Funktionen unverändert gegenüber v0.48.7.
+
+
+v0.48.9:
+- Alle sechs Theme-Hintergründe liegen als 7680×4320 (8K) vor.
+- Gespeicherte-NSC-Settingreiter zeigen jetzt kleine passende Hintergrundmotive.
+- Layout und Funktionen ansonsten unverändert gegenüber v0.48.8.
