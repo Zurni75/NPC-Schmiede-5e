@@ -92,3 +92,9 @@ v0.49.1:
 v0.49.2:
 - Die versehentlich oberhalb der App eingeblendete Setting-Schnellauswahl vollständig entfernt.
 - Die kleinen bebilderten Reiter innerhalb von 'Gespeicherte NSC' bleiben erhalten.
+
+
+v0.49.3:
+- Fantasy-Mittelalter-Hintergrund korrigiert: schwarze Ränder aus der Bilddatei entfernt.
+- Das Fantasy-Motiv füllt nun die komplette 16:9-Hintergrundfläche.
+- Keine Schnellauswahl oben; gespeicherte NSC-Reiter bleiben unverändert.
