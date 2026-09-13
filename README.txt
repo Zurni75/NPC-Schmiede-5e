@@ -98,3 +98,12 @@ v0.49.3:
 - Fantasy-Mittelalter-Hintergrund korrigiert: schwarze Ränder aus der Bilddatei entfernt.
 - Das Fantasy-Motiv füllt nun die komplette 16:9-Hintergrundfläche.
 - Keine Schnellauswahl oben; gespeicherte NSC-Reiter bleiben unverändert.
+
+
+v0.49.4:
+- D10 als fest definiertes universelles NSC-Schmiede-Poolsystem überarbeitet.
+- Attribute 1–5; Fertigkeiten 0–5; Probe = Attribut + Fertigkeit in W10.
+- 8–9 = 1 Erfolg, 10 = 2 Erfolge.
+- Initiative ist jetzt ein Zahlenwert statt eines fälschlichen W10-Pools.
+- Beruf/Archetyp beeinflusst passende Kernattribute.
+- Bestehende 5e- und OpenD6-Logik unverändert.

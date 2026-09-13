@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NSC-Schmiede v0.49.3</title>
+<title>NSC-Schmiede v0.49.4</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -103,7 +103,7 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
 .genre-tab .count{opacity:.75;font-size:.88em;margin-left:4px}
 @media(max-width:620px){.genre-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:9px}.genre-tab{white-space:nowrap;flex:0 0 auto}}
 
-/* v0.49.3 – echte Ganzseiten-Hintergründe je Setting */
+/* v0.49.4 – echte Ganzseiten-Hintergründe je Setting */
 body{
   --theme-bg:url('/theme-fantasy.jpg');
   --theme-shade:rgba(3,6,10,.48);
@@ -139,7 +139,7 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 @media(max-width:620px){body{background-attachment:fixed!important;background-position:center center!important;background-size:100vw 100vh!important}.genre-tab{padding:5px 8px!important;font-size:11px!important}}
 
 
-/* v0.49.3 – kompakte Setting-Reiter mit Motivbildern */
+/* v0.49.4 – kompakte Setting-Reiter mit Motivbildern */
 .genre-tabs{
   display:flex!important;
   gap:8px!important;
@@ -212,7 +212,7 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 <body><div class="wrap"><div class="app-shell">
 
 <div class="app-main">
-<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.49.3</div></header>
+<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.49.4</div></header>
 <div class="content">
 
 <div id="mainScreen">
@@ -497,18 +497,64 @@ function buildD6Mechanics(level,role,npc){
 }
 function d10Tier(level){return level<=4?0:level<=8?1:level<=12?2:level<=16?3:4;}
 function buildD10Mechanics(level,role,npc){
-  const tier=d10Tier(level), labs=["KÖR","GES","VER","WAH","PRÄ","WIL"];
+  const tier=d10Tier(level);
+  const labs=["KÖR","GES","VER","WAH","PRÄ","WIL"];
+  const roleText=((npc?.job||"")+" "+(npc?.profession||"")+" "+(npc?.occupation||"")+" "+(npc?.appearance||"")+" "+(npc?.personality||"")).toLowerCase();
+
+  // Eigenes universelles D10-Poolsystem der NSC-Schmiede:
+  // Attribute 1–5, Fertigkeiten 0–5, Probe = Attribut + Fertigkeit in W10.
   let vals=[2,2,2,3,3,3].sort(()=>Math.random()-.5);
-  for(let i=0;i<tier;i++)vals[(i+Math.floor(Math.random()*6))%6]=Math.min(5,vals[(i+Math.floor(Math.random()*6))%6]+1);
-  if(role==="Wichtiger NSC"||role==="Gegner")vals[Math.floor(Math.random()*6)]=Math.min(5,Math.max(4,vals[Math.floor(Math.random()*6)]||3));
-  const skillNames=(npc.skills||[]).slice(0,4);
-  const skillRanks=skillNames.map((_,i)=>Math.min(5,1+tier+(i<2?1:0)+(role==="Wichtiger NSC"&&i===0?1:0)));
-  const skills=skillNames.map((skill,i)=>{const a=vals[i%6],r=skillRanks[i],pool=a+r;return `${skill}: <b>${r}</b> (${pool}W10)`;}).join("<br>");
-  const attack=Math.min(10,vals[1]+skillRanks[0]+(role==="Gegner"?1:0));
-  const defense=1+Math.floor((vals[1]+vals[3])/2)+(role==="Gegner"?1:0), wounds=3+vals[0]+vals[5];
-  const special=role==="Gegner"?"Einmal pro Szene +2W10 auf eine passende Aktion.":"Einmal pro Szene +1W10 auf eine passende Berufs- oder Kontaktprobe.";
-  return {levelText:`Erfahrungsstufe ${level}`,labels:["Abwehr","Ausdauer","Kompetenz","Initiative"],summary:[defense,wounds,["Anfänger","Erfahren","Profi","Elite","Meister"][tier],`${vals[1]+vals[3]}W10`],stats:labs.map((x,i)=>({label:x,value:vals[i],extra:"1–5"})),skills,combat:`<b>D10-Regelprofil:</b> NSC-Schmiede Würfelpool<br><br><b>Probe:</b> Attribut + Fertigkeit = Anzahl W10<br><b>7–9:</b> 1 Erfolg &nbsp; · &nbsp; <b>10:</b> 2 Erfolge<br><b>Schwierigkeit:</b> 1 einfach · 2 normal · 3 schwierig · 4 sehr schwierig · 5 außergewöhnlich<br><br><b>Typischer Angriff / Hauptaktion:</b> ${attack}W10<br><b>Abwehr:</b> ${defense}<br><b>Ausdauer:</b> ${wounds}<br><br><b>Besondere Fähigkeit:</b> ${special}<br><br><span style="color:#aaa">Dieses D10-Profil ist ein eigenes universelles Regelprofil der NSC-Schmiede.</span>`};
+  const boosts=2+tier+(role==="Wichtiger NSC"?1:0)+(role==="Gegner"?1:0);
+  for(let i=0;i<boosts;i++){
+    const ix=Math.floor(Math.random()*6);
+    vals[ix]=Math.min(5,vals[ix]+1);
+  }
+
+  // Beruf/Archetyp beeinflusst die Kernattribute.
+  const bump=(ix,n=1)=>vals[ix]=Math.min(5,vals[ix]+n);
+  if(/soldat|kämpf|kaempf|söldner|soeldner|wache|athlet|werwolf|bodyguard|krieger/.test(roleText)){bump(0);bump(1);}
+  if(/detektiv|poliz|jäger|jaeger|scout|späher|spaeher|forscher/.test(roleText)){bump(3);bump(2);}
+  if(/sozial|diplomat|händler|haendler|wirt|adel|künstler|kuenstler|polit/.test(roleText)){bump(4);bump(5);}
+  if(/gelehrt|wissenschaft|arzt|ärzt|aerzt|magier|techniker|ingenieur/.test(roleText)){bump(2);bump(3);}
+
+  const skillNames=(npc.skills||[]).slice(0,5);
+  while(skillNames.length<4)skillNames.push(["Athletik","Wahrnehmung","Überzeugen","Heimlichkeit"][skillNames.length]||"Allgemeinwissen");
+  const baseRank=[2,2,1,1,1][tier]||1;
+  const skillRanks=skillNames.map((_,i)=>Math.min(5,baseRank+tier+(i<2?1:0)+(role==="Wichtiger NSC"&&i===0?1:0)));
+  const attrForSkill=i=>[1,3,4,1,2][i%5];
+  const skills=skillNames.map((skill,i)=>{
+    const ai=attrForSkill(i), r=skillRanks[i], pool=Math.min(10,vals[ai]+r);
+    return `${skill}: <b>${r}</b> · Pool <b>${pool}W10</b>`;
+  }).join("<br>");
+
+  const competence=["Einsteiger","Geübt","Erfahren","Experte","Elite"][tier];
+  const defense=Math.max(1,Math.ceil((vals[1]+vals[3])/2)+(role==="Gegner"?1:0));
+  const stamina=5+vals[0]+vals[5]+tier+(role==="Wichtiger NSC"?1:0);
+  const initiative=vals[1]+vals[3]; // fester Zahlenwert, KEIN W10-Pool
+  const mainPool=Math.min(10,vals[1]+skillRanks[0]+(role==="Gegner"?1:0));
+  const special=role==="Gegner"
+    ?"Einmal pro Szene +2W10 auf eine passende offensive oder körperliche Aktion."
+    :"Einmal pro Szene +1W10 auf eine passende Berufs-, Sozial- oder Ermittlungsprobe.";
+
+  return {
+    levelText:`Erfahrungsstufe ${level}`,
+    labels:["Abwehr","Ausdauer","Kompetenz","Initiative"],
+    summary:[defense,stamina,competence,initiative],
+    stats:labs.map((x,i)=>({label:x,value:vals[i],extra:"1–5"})),
+    skills,
+    combat:`<b>D10-Regelprofil – NSC-Schmiede:</b><br><br>
+<b>Attribute:</b> 1 schwach · 2 durchschnittlich · 3 gut · 4 außergewöhnlich · 5 herausragend<br>
+<b>Fertigkeiten:</b> 0 ungeübt bis 5 meisterlich<br>
+<b>Probe:</b> Attribut + Fertigkeit = Anzahl W10<br>
+<b>Erfolge:</b> 8–9 = 1 Erfolg · 10 = 2 Erfolge<br>
+<b>Schwierigkeit:</b> 1 Erfolg leicht · 2 normal · 3 anspruchsvoll · 4 schwer · 5 extrem<br><br>
+<b>Typischer Hauptpool:</b> ${mainPool}W10<br>
+<b>Abwehr:</b> ${defense} &nbsp; · &nbsp; <b>Ausdauer:</b> ${stamina} &nbsp; · &nbsp; <b>Initiative:</b> ${initiative}<br><br>
+<b>Besondere Fähigkeit:</b> ${special}<br><br>
+<span style="color:#aaa">Universelles D10-Poolsystem der NSC-Schmiede; nicht an ein einzelnes kommerzielles Regelwerk gebunden.</span>`
+  };
 }
+
 async function initGoogleDrive(){
   try{
     const r=await fetch('/api/google-config'); const cfg=await r.json();
@@ -880,7 +926,7 @@ align-items:center;justify-content:center;padding:0;cursor:pointer">
 
 </body></html>
 <style id="v0487-fixes">
-/* v0.49.3 – Seitenleiste entfernt, Bibliotheks-Reiter repariert */
+/* v0.49.4 – Seitenleiste entfernt, Bibliotheks-Reiter repariert */
 .app-shell{display:block!important;min-height:100vh!important}
 .app-main{width:100%!important;min-width:0!important}
 .side-nav,.side-art,.side-quote{display:none!important}
