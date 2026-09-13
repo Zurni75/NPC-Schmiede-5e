@@ -113,3 +113,10 @@ v0.49.5:
 - Gespeicherte D10-NSC werden beim Öffnen automatisch auf D10-v2 neu berechnet.
 - Alte Initiative-Werte wie 4W10 verschwinden.
 - Nach Änderungen speichern wird der neue Stand dauerhaft gesichert.
+
+
+v0.49.6:
+- D10 auf 9 Attribute umgestellt: 3 körperlich, 3 sozial, 3 geistig.
+- Abwehr als W10-Pool, Initiative als Zahl.
+- Alte D10-NSC robuster erkannt und neu berechnet.
+- Kampfbereich kompakt und sauber formatiert.

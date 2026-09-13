@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NSC-Schmiede v0.49.5</title>
+<title>NSC-Schmiede v0.49.6</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -103,7 +103,7 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
 .genre-tab .count{opacity:.75;font-size:.88em;margin-left:4px}
 @media(max-width:620px){.genre-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:9px}.genre-tab{white-space:nowrap;flex:0 0 auto}}
 
-/* v0.49.5 – echte Ganzseiten-Hintergründe je Setting */
+/* v0.49.6 – echte Ganzseiten-Hintergründe je Setting */
 body{
   --theme-bg:url('/theme-fantasy.jpg');
   --theme-shade:rgba(3,6,10,.48);
@@ -139,7 +139,7 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 @media(max-width:620px){body{background-attachment:fixed!important;background-position:center center!important;background-size:100vw 100vh!important}.genre-tab{padding:5px 8px!important;font-size:11px!important}}
 
 
-/* v0.49.5 – kompakte Setting-Reiter mit Motivbildern */
+/* v0.49.6 – kompakte Setting-Reiter mit Motivbildern */
 .genre-tabs{
   display:flex!important;
   gap:8px!important;
@@ -212,7 +212,7 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 <body><div class="wrap"><div class="app-shell">
 
 <div class="app-main">
-<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.49.5</div></header>
+<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.49.6</div></header>
 <div class="content">
 
 <div id="mainScreen">
@@ -496,62 +496,51 @@ function buildD6Mechanics(level,role,npc){
   return {levelText:`Erfahrungsstufe ${level}`,labels:["Widerstand","Wunden","Kompetenz","Initiative"],summary:[pipText(resist),"Wundstufen",["Anfänger","Erfahren","Profi","Elite","Meister"][tier],pipText(init)],stats:labs.map((x,i)=>({label:x,value:pipText(base[i]),extra:"Grundattribut"})),skills,combat:`<b>D6-Regelprofil:</b> OpenD6-basiert<br><br><b>Typischer Angriff / Hauptaktion:</b> ${pipText(attack)}<br><b>Schadenswiderstand:</b> ${pipText(resist)}<br><b>Wunden:</b> Betäubt → Verwundet → Schwer verwundet → Außer Gefecht<br><br><b>Besondere Fähigkeit:</b> ${special}<br><br><span style="color:#aaa">Werte werden als Würfel und Pips dargestellt: 2D → 2D+1 → 2D+2 → 3D. Die Erfahrungsstufe 1–20 ist eine NSC-Schmiede-Hilfe zur Einordnung der Kompetenz und kein OpenD6-Level.</span>`};
 }
 function d10Tier(level){return level<=4?0:level<=8?1:level<=12?2:level<=16?3:4;}
+function isD10Npc(n){return String(n?.system||"").toLowerCase()==="d10" || /(?:^| · )D10(?: · |$)/i.test(String(n?.meta||""));}
 function buildD10Mechanics(level,role,npc){
   const tier=d10Tier(level);
-  const labs=["KÖR","GES","VER","WAH","PRÄ","WIL"];
-  const roleText=((npc?.job||"")+" "+(npc?.profession||"")+" "+(npc?.occupation||"")+" "+(npc?.appearance||"")+" "+(npc?.personality||"")).toLowerCase();
-
-  // Eigenes universelles D10-Poolsystem der NSC-Schmiede:
-  // Attribute 1–5, Fertigkeiten 0–5, Probe = Attribut + Fertigkeit in W10.
-  let vals=[2,2,2,3,3,3].sort(()=>Math.random()-.5);
-  const boosts=2+tier+(role==="Wichtiger NSC"?1:0)+(role==="Gegner"?1:0);
-  for(let i=0;i<boosts;i++){
-    const ix=Math.floor(Math.random()*6);
-    vals[ix]=Math.min(5,vals[ix]+1);
+  const labs=["STÄ","GES","WID","CHA","EIN","HAL","WAH","INT","WIL"];
+  let vals=[2,2,2,2,2,2,2,2,2];
+  const points=[3,5,7,9,11][tier]+(role==="Wichtiger NSC"?2:0)+(role==="Gegner"?1:0);
+  for(let i=0;i<points;i++){const ix=Math.floor(Math.random()*9);vals[ix]=Math.min(5,vals[ix]+1);}
+  const text=((npc?.profession||"")+" "+(npc?.job||"")+" "+(npc?.appearance||"")+" "+(npc?.personality||"")+" "+(npc?.race||"")).toLowerCase();
+  const bump=(ix,n=1)=>{for(let k=0;k<n;k++)vals[ix]=Math.min(5,vals[ix]+1);};
+  if(/werwolf|krieger|soldat|söldner|soeldner|bodyguard|athlet|kämpf|kaempf/.test(text)){bump(0);bump(2);}
+  if(/dieb|schurke|einbrecher|akrobat|schütze|schuetze|jäger|jaeger/.test(text)){bump(1);bump(6);}
+  if(/sozial|diplomat|händler|haendler|wirt|polit|künstler|kuenstler|berater/.test(text)){bump(3);bump(4);}
+  if(/einschüchter|einschuechter|gangster|boss|anführer|anfuehrer/.test(text)){bump(4);bump(5);}
+  if(/wissenschaft|gelehrt|arzt|ärzt|aerzt|forscher|techniker|ingenieur|detektiv/.test(text)){bump(7);bump(6);}
+  if(/priester|okkult|magier|medium|psycholog/.test(text)){bump(8);bump(7);}
+  const raw=(npc?.skills||[]).map(x=>String(x).replace(/<[^>]+>/g,"").split(":")[0].trim()).filter(Boolean);
+  const defaults=["Athletik","Wahrnehmung","Überzeugen","Heimlichkeit","Beruf"];
+  const names=[...raw,...defaults].filter((v,i,a)=>v&&a.indexOf(v)===i).slice(0,5);
+  const ranks=names.map((_,i)=>Math.min(5,1+tier+(i<2?1:0)+(role==="Wichtiger NSC"&&i===0?1:0)));
+  function attrIndexForSkill(name){
+    const x=String(name).toLowerCase();
+    if(/athlet|nahkampf|kraft|ringen/.test(x))return 0;
+    if(/heimlich|schieß|schiess|fein|akrobat|fahren/.test(x))return 1;
+    if(/ausdauer|überleben|ueberleben/.test(x))return 2;
+    if(/überzeug|ueberzeug|charme|etikette|auftreten/.test(x))return 3;
+    if(/einschüchter|einschuechter|täusch|taeusch|führung|fuehrung/.test(x))return 4;
+    if(/gelassen|haltung|disziplin/.test(x))return 5;
+    if(/wahrnehm|ermitt|beobacht|spür|spuer/.test(x))return 6;
+    if(/wissen|technik|medizin|okkult|beruf|wissenschaft/.test(x))return 7;
+    return 8;
   }
-
-  // Beruf/Archetyp beeinflusst die Kernattribute.
-  const bump=(ix,n=1)=>vals[ix]=Math.min(5,vals[ix]+n);
-  if(/soldat|kämpf|kaempf|söldner|soeldner|wache|athlet|werwolf|bodyguard|krieger/.test(roleText)){bump(0);bump(1);}
-  if(/detektiv|poliz|jäger|jaeger|scout|späher|spaeher|forscher/.test(roleText)){bump(3);bump(2);}
-  if(/sozial|diplomat|händler|haendler|wirt|adel|künstler|kuenstler|polit/.test(roleText)){bump(4);bump(5);}
-  if(/gelehrt|wissenschaft|arzt|ärzt|aerzt|magier|techniker|ingenieur/.test(roleText)){bump(2);bump(3);}
-
-  const skillNames=(npc.skills||[]).slice(0,5);
-  while(skillNames.length<4)skillNames.push(["Athletik","Wahrnehmung","Überzeugen","Heimlichkeit"][skillNames.length]||"Allgemeinwissen");
-  const baseRank=[2,2,1,1,1][tier]||1;
-  const skillRanks=skillNames.map((_,i)=>Math.min(5,baseRank+tier+(i<2?1:0)+(role==="Wichtiger NSC"&&i===0?1:0)));
-  const attrForSkill=i=>[1,3,4,1,2][i%5];
-  const skills=skillNames.map((skill,i)=>{
-    const ai=attrForSkill(i), r=skillRanks[i], pool=Math.min(10,vals[ai]+r);
-    return `${skill}: <b>${r}</b> · Pool <b>${pool}W10</b>`;
-  }).join("<br>");
-
+  const skillLines=names.map((name,i)=>{const ai=attrIndexForSkill(name),pool=Math.min(10,vals[ai]+ranks[i]);return `${name}: Rang ${ranks[i]} · ${pool}W10`;});
+  const defensePool=Math.min(10,vals[1]+vals[6]);
+  const initiative=vals[1]+vals[6];
+  const stamina=5+vals[2]+vals[8];
   const competence=["Einsteiger","Geübt","Erfahren","Experte","Elite"][tier];
-  const defense=Math.max(1,Math.ceil((vals[1]+vals[3])/2)+(role==="Gegner"?1:0));
-  const stamina=5+vals[0]+vals[5]+tier+(role==="Wichtiger NSC"?1:0);
-  const initiative=vals[1]+vals[3]; // fester Zahlenwert, KEIN W10-Pool
-  const mainPool=Math.min(10,vals[1]+skillRanks[0]+(role==="Gegner"?1:0));
-  const special=role==="Gegner"
-    ?"Einmal pro Szene +2W10 auf eine passende offensive oder körperliche Aktion."
-    :"Einmal pro Szene +1W10 auf eine passende Berufs-, Sozial- oder Ermittlungsprobe.";
-
+  const mainSkill=names[0], mainAttr=attrIndexForSkill(mainSkill), mainPool=Math.min(10,vals[mainAttr]+ranks[0]);
+  const special=role==="Gegner"?"Einmal pro Szene +2W10 auf eine passende offensive Aktion.":"Einmal pro Szene +1W10 auf eine passende Kernkompetenz.";
   return {
     levelText:`Erfahrungsstufe ${level}`,
-    labels:["Abwehr","Ausdauer","Kompetenz","Initiative"],
-    summary:[defense,stamina,competence,initiative],
-    stats:labs.map((x,i)=>({label:x,value:vals[i],extra:"1–5"})),
-    skills,
-    combat:`<b>D10-Regelprofil – NSC-Schmiede:</b><br><br>
-<b>Attribute:</b> 1 schwach · 2 durchschnittlich · 3 gut · 4 außergewöhnlich · 5 herausragend<br>
-<b>Fertigkeiten:</b> 0 ungeübt bis 5 meisterlich<br>
-<b>Probe:</b> Attribut + Fertigkeit = Anzahl W10<br>
-<b>Erfolge:</b> 8–9 = 1 Erfolg · 10 = 2 Erfolge<br>
-<b>Schwierigkeit:</b> 1 Erfolg leicht · 2 normal · 3 anspruchsvoll · 4 schwer · 5 extrem<br><br>
-<b>Typischer Hauptpool:</b> ${mainPool}W10<br>
-<b>Abwehr:</b> ${defense} &nbsp; · &nbsp; <b>Ausdauer:</b> ${stamina} &nbsp; · &nbsp; <b>Initiative:</b> ${initiative}<br><br>
-<b>Besondere Fähigkeit:</b> ${special}<br><br>
-<span style="color:#aaa">Universelles D10-Poolsystem der NSC-Schmiede; nicht an ein einzelnes kommerzielles Regelwerk gebunden.</span>`
+    labels:["Abwehrpool","Ausdauer","Kompetenz","Initiative"],
+    summary:[`${defensePool}W10`,stamina,competence,initiative],
+    stats:labs.map((x,i)=>({label:x,value:vals[i],extra:i<3?"Körperlich":i<6?"Sozial":"Geistig"})),
+    skills:skillLines.join("<br>"),
+    combat:`<b>D10 – Kurzregeln</b><br>Probe: Attribut + Fertigkeit = W10-Pool. 8–9 = 1 Erfolg, 10 = 2 Erfolge.<br><br><b>Abwehrpool:</b> ${defensePool}W10<br><b>Ausdauer:</b> ${stamina}<br><b>Initiative:</b> ${initiative}<br><b>Typischer Hauptpool (${mainSkill}):</b> ${mainPool}W10<br><br><b>Besonderheit:</b> ${special}`
   };
 }
 
@@ -864,13 +853,13 @@ async function loadNPC(id){
   if(!n){currentPortraitDriveFileId=null;n=getSavedNPCs().find(x=>String(x.id)===String(id)); if(n)image=await loadPortrait(n.id);}
   if(!n)return;
   currentNpcId=n.id;
-  document.getElementById("system").value=(n.system==="d20"?"5e":(n.system||"5e")); document.getElementById("setting").value=inferSettingFromMeta(n); applySettingTheme(document.getElementById("setting").value);
+  if(isD10Npc(n))n.system="d10"; document.getElementById("system").value=(n.system==="d20"?"5e":(n.system||"5e")); document.getElementById("setting").value=inferSettingFromMeta(n); applySettingTheme(document.getElementById("setting").value);
   document.getElementById("keywords").value=n.sourceKeywords||currentNpcFallbackKeywordsFromMeta(n.meta);
   if(n.sourceRole)document.getElementById("role").value=n.sourceRole;
   if(n.sourceGender)document.getElementById("gender").value=n.sourceGender;
   if(n.sourceLevel)document.getElementById("level").value=n.sourceLevel;
   document.getElementById("name").textContent=n.name; document.getElementById("meta").textContent=n.meta;
-  if(n.system==="d10"){
+  if(isD10Npc(n)){
     const metaParts=String(n.meta||"").split(" · ");
     const levelMatch=String(n.meta||"").match(/Erfahrungsstufe\s*(\d+)/i);
     const d10Level=Math.max(1,Math.min(20,parseInt(n.sourceLevel)||parseInt(levelMatch?.[1])||5));
@@ -881,7 +870,7 @@ async function loadNPC(id){
     n.stats=mech.stats.map(x=>`${x.label} ${x.value} ${x.extra||""}`.trim());
     n.skills=mech.skills.replace(/<br\s*\/?>/gi,"\n").replace(/<[^>]+>/g,"");
     n.combat=mech.combat.replace(/<br\s*\/?>/gi,"\n").replace(/<[^>]+>/g,"");
-    n.mechanicsVersion="d10-v2";
+    n.mechanicsVersion="d10-v3"; window.__lastD10Combat=mech.combat;
     document.getElementById("acLabel").textContent=mech.labels[0]; document.getElementById("ac").textContent=mech.summary[0];
     document.getElementById("hpLabel").textContent=mech.labels[1]; document.getElementById("hp").textContent=mech.summary[1];
     document.getElementById("pbLabel").textContent=mech.labels[2]; document.getElementById("pb").textContent=mech.summary[2];
@@ -895,7 +884,7 @@ async function loadNPC(id){
   updateLevelLabel();
   document.getElementById("appearance").textContent=n.appearance||"";document.getElementById("clothing").textContent=n.clothing||"";document.getElementById("personality").textContent=n.personality||"";document.getElementById("motivation").textContent=n.motivation||"";
   document.getElementById("quirk").textContent=n.quirk||"";renderStoredIBF(n.ibf||"");document.getElementById("secret").textContent=n.secret||"";document.getElementById("skills").innerText=n.skills||"";
-  document.getElementById("speech").textContent=n.speech||"";document.getElementById("combat").innerText=n.combat||"";document.getElementById("usedWhere").value=n.usedWhere||"";document.getElementById("knownNPCs").value=n.knownNPCs||"";document.getElementById("gmNotes").value=n.gmNotes||"";
+  document.getElementById("speech").textContent=n.speech||"";if(isD10Npc(n)&&window.__lastD10Combat){document.getElementById("combat").innerHTML=window.__lastD10Combat;}else{document.getElementById("combat").innerText=n.combat||"";}document.getElementById("usedWhere").value=n.usedWhere||"";document.getElementById("knownNPCs").value=n.knownNPCs||"";document.getElementById("gmNotes").value=n.gmNotes||"";
   if(image){currentPortraitData=image;document.getElementById("portraitBox").innerHTML=`<img src="${image}" alt="NSC Portrait">`;document.getElementById("playerImage").innerHTML=`<img src="${image}" alt="Spieleransicht">`;await savePortrait(n.id,image);}else resetPortrait();
   mirrorLocalNPC(n,image);
   document.getElementById("imageStatus").textContent=image?(currentPortraitDriveFileId?"✓ Portrait aus Google Drive geladen.":"✓ Portrait geladen."):"Für diesen NSC ist noch kein Portrait hinterlegt.";
@@ -946,7 +935,7 @@ align-items:center;justify-content:center;padding:0;cursor:pointer">
 
 </body></html>
 <style id="v0487-fixes">
-/* v0.49.5 – Seitenleiste entfernt, Bibliotheks-Reiter repariert */
+/* v0.49.6 – Seitenleiste entfernt, Bibliotheks-Reiter repariert */
 .app-shell{display:block!important;min-height:100vh!important}
 .app-main{width:100%!important;min-width:0!important}
 .side-nav,.side-art,.side-quote{display:none!important}
