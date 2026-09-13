@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NSC-Schmiede v0.49.6</title>
+<title>NSC-Schmiede v0.49.7</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -103,7 +103,7 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
 .genre-tab .count{opacity:.75;font-size:.88em;margin-left:4px}
 @media(max-width:620px){.genre-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:9px}.genre-tab{white-space:nowrap;flex:0 0 auto}}
 
-/* v0.49.6 – echte Ganzseiten-Hintergründe je Setting */
+/* v0.49.7 – echte Ganzseiten-Hintergründe je Setting */
 body{
   --theme-bg:url('/theme-fantasy.jpg');
   --theme-shade:rgba(3,6,10,.48);
@@ -139,7 +139,7 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 @media(max-width:620px){body{background-attachment:fixed!important;background-position:center center!important;background-size:100vw 100vh!important}.genre-tab{padding:5px 8px!important;font-size:11px!important}}
 
 
-/* v0.49.6 – kompakte Setting-Reiter mit Motivbildern */
+/* v0.49.7 – kompakte Setting-Reiter mit Motivbildern */
 .genre-tabs{
   display:flex!important;
   gap:8px!important;
@@ -212,7 +212,7 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 <body><div class="wrap"><div class="app-shell">
 
 <div class="app-main">
-<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.49.6</div></header>
+<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.49.7</div></header>
 <div class="content">
 
 <div id="mainScreen">
@@ -499,7 +499,7 @@ function d10Tier(level){return level<=4?0:level<=8?1:level<=12?2:level<=16?3:4;}
 function isD10Npc(n){return String(n?.system||"").toLowerCase()==="d10" || /(?:^| · )D10(?: · |$)/i.test(String(n?.meta||""));}
 function buildD10Mechanics(level,role,npc){
   const tier=d10Tier(level);
-  const labs=["STÄ","GES","WID","CHA","EIN","HAL","WAH","INT","WIL"];
+  const labs=["Stärke","Geschicklichkeit","Widerstand","Charisma","Einfühlungsvermögen","Haltung","Wahrnehmung","Intelligenz","Willenskraft"];
   let vals=[2,2,2,2,2,2,2,2,2];
   const points=[3,5,7,9,11][tier]+(role==="Wichtiger NSC"?2:0)+(role==="Gegner"?1:0);
   for(let i=0;i<points;i++){const ix=Math.floor(Math.random()*9);vals[ix]=Math.min(5,vals[ix]+1);}
@@ -538,7 +538,7 @@ function buildD10Mechanics(level,role,npc){
     levelText:`Erfahrungsstufe ${level}`,
     labels:["Abwehrpool","Ausdauer","Kompetenz","Initiative"],
     summary:[`${defensePool}W10`,stamina,competence,initiative],
-    stats:labs.map((x,i)=>({label:x,value:vals[i],extra:i<3?"Körperlich":i<6?"Sozial":"Geistig"})),
+    stats:labs.map((x,i)=>({label:x,value:`${vals[i]}D10`,extra:i<3?"Körperlich":i<6?"Sozial":"Geistig"})),
     skills:skillLines.join("<br>"),
     combat:`<b>D10 – Kurzregeln</b><br>Probe: Attribut + Fertigkeit = W10-Pool. 8–9 = 1 Erfolg, 10 = 2 Erfolge.<br><br><b>Abwehrpool:</b> ${defensePool}W10<br><b>Ausdauer:</b> ${stamina}<br><b>Initiative:</b> ${initiative}<br><b>Typischer Hauptpool (${mainSkill}):</b> ${mainPool}W10<br><br><b>Besonderheit:</b> ${special}`
   };
@@ -867,7 +867,7 @@ async function loadNPC(id){
     const pseudoNpc={profession:metaParts[1]||"",job:metaParts[1]||"",appearance:n.appearance||"",personality:n.personality||"",skills:skillList};
     const mech=buildD10Mechanics(d10Level,n.sourceRole||"Normaler NSC",pseudoNpc,n.setting||inferSettingFromMeta(n));
     n.ac=String(mech.summary[0]); n.hp=String(mech.summary[1]); n.pb=String(mech.summary[2]); n.init=String(mech.summary[3]);
-    n.stats=mech.stats.map(x=>`${x.label} ${x.value} ${x.extra||""}`.trim());
+    n.stats=mech.stats.map(x=>`${x.label}|||${x.value}|||${x.extra||""}`);
     n.skills=mech.skills.replace(/<br\s*\/?>/gi,"\n").replace(/<[^>]+>/g,"");
     n.combat=mech.combat.replace(/<br\s*\/?>/gi,"\n").replace(/<[^>]+>/g,"");
     n.mechanicsVersion="d10-v3"; window.__lastD10Combat=mech.combat;
@@ -879,7 +879,7 @@ async function loadNPC(id){
   }else{
     document.getElementById("ac").textContent=n.ac; document.getElementById("hp").textContent=n.hp; document.getElementById("pb").textContent=n.pb; document.getElementById("init").textContent=n.init;
     const poolSystem=(n.system==="d6");document.getElementById("acLabel").textContent=n.system==="d6"?"Widerstand":"RK";document.getElementById("hpLabel").textContent=n.system==="d6"?"Wunden":"TP";document.getElementById("pbLabel").textContent=poolSystem?"Kompetenz":"ÜB";document.getElementById("initLabel").textContent="Initiative";
-    document.getElementById("stats").innerHTML=(n.stats||[]).map(v=>{const parts=String(v).split(" ");return `<div class="stat"><b>${parts[0]||""}</b><span>${parts[1]||""}</span><div>${parts.slice(2).join(" ")}</div></div>`;}).join("");
+    document.getElementById("stats").innerHTML=(n.stats||[]).map(v=>{const raw=String(v);const parts=raw.includes("|||")?raw.split("|||"):raw.split(" ");return `<div class="stat"><b>${parts[0]||""}</b><span>${parts[1]||""}</span><div>${raw.includes("|||")?(parts[2]||""):parts.slice(2).join(" ")}</div></div>`;}).join("");
   }
   updateLevelLabel();
   document.getElementById("appearance").textContent=n.appearance||"";document.getElementById("clothing").textContent=n.clothing||"";document.getElementById("personality").textContent=n.personality||"";document.getElementById("motivation").textContent=n.motivation||"";
@@ -935,7 +935,7 @@ align-items:center;justify-content:center;padding:0;cursor:pointer">
 
 </body></html>
 <style id="v0487-fixes">
-/* v0.49.6 – Seitenleiste entfernt, Bibliotheks-Reiter repariert */
+/* v0.49.7 – Seitenleiste entfernt, Bibliotheks-Reiter repariert */
 .app-shell{display:block!important;min-height:100vh!important}
 .app-main{width:100%!important;min-width:0!important}
 .side-nav,.side-art,.side-quote{display:none!important}

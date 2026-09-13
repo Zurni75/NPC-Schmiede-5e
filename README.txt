@@ -120,3 +120,10 @@ v0.49.6:
 - Abwehr als W10-Pool, Initiative als Zahl.
 - Alte D10-NSC robuster erkannt und neu berechnet.
 - Kampfbereich kompakt und sauber formatiert.
+
+
+v0.49.7:
+- D10-Attribute vollständig ausgeschrieben.
+- Attributwerte werden als Würfelpools angezeigt: z.B. 3D10, 4D10, 5D10.
+- Keine Abkürzungen STÄ/GES/WID/CHA/EIN/HAL/WAH/INT/WIL mehr.
+- Speicherung/Anzeige für mehrteilige Attributnamen angepasst.
