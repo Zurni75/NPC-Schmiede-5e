@@ -87,3 +87,8 @@ v0.49.1:
 - Neue Themes: Horror und Wilder Westen.
 - Hintergrund proportional per cover statt verzerrt dargestellt.
 - Bebilderte Setting-Schnellauswahl ergänzt.
+
+
+v0.49.2:
+- Die versehentlich oberhalb der App eingeblendete Setting-Schnellauswahl vollständig entfernt.
+- Die kleinen bebilderten Reiter innerhalb von 'Gespeicherte NSC' bleiben erhalten.
