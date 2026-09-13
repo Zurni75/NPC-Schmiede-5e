@@ -73,3 +73,10 @@ v0.48.9:
 - Alle sechs Theme-Hintergründe liegen als 7680×4320 (8K) vor.
 - Gespeicherte-NSC-Settingreiter zeigen jetzt kleine passende Hintergrundmotive.
 - Layout und Funktionen ansonsten unverändert gegenüber v0.48.8.
+
+
+v0.49.0:
+- Theme-Hintergründe werden nicht mehr mit CSS `cover` beschnitten.
+- Das komplette erzeugte 8K-Bild wird über den gesamten sichtbaren Monitor gelegt (100vw × 100vh).
+- Dadurch ist immer das vollständige Motiv sichtbar; die Setting-Reiter mit Mini-Hintergründen bleiben erhalten.
+- Sonstige Funktionen und Layout unverändert gegenüber v0.48.9.
