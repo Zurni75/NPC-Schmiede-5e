@@ -145,3 +145,10 @@ v0.50.0:
 - Horror-Theme bleibt erhalten.
 - Western-Theme bleibt als eigenes Theme erhalten.
 - Regelsystem-Auswahl bleibt auf 5e und OpenD6 beschränkt.
+
+
+v0.50.1:
+- In Gespeicherte NSC erscheint links neben jedem Namen eine runde Portrait-Miniatur.
+- Die Miniatur nutzt einen engen, nach oben versetzten Ausschnitt, damit vor allem das Gesicht sichtbar ist.
+- Ohne vorhandenes Portrait wird dezent der Anfangsbuchstabe des Namens angezeigt.
+- Portrait-Miniaturen werden nachgeladen und gecacht, damit die Liste schnell aufgebaut wird.
