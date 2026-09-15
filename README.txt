@@ -127,3 +127,11 @@ v0.49.7:
 - Attributwerte werden als Würfelpools angezeigt: z.B. 3D10, 4D10, 5D10.
 - Keine Abkürzungen STÄ/GES/WID/CHA/EIN/HAL/WAH/INT/WIL mehr.
 - Speicherung/Anzeige für mehrteilige Attributnamen angepasst.
+
+
+v0.49.8:
+- Unterstützte Regelsysteme auf 5e und OpenD6 beschränkt.
+- D10 aus der Auswahl entfernt.
+- Setting/Welt/Epoche bleibt frei und unabhängig vom Regelsystem.
+- Alte gespeicherte D10-NSC werden beim Öffnen auf OpenD6-Regelwerte migriert.
+- Narrative Inhalte, Themes und übrige App-Struktur bleiben erhalten.
