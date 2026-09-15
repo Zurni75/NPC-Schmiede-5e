@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NSC-Schmiede v0.49.8</title>
+<title>NSC-Schmiede v0.49.9</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -103,7 +103,7 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
 .genre-tab .count{opacity:.75;font-size:.88em;margin-left:4px}
 @media(max-width:620px){.genre-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:9px}.genre-tab{white-space:nowrap;flex:0 0 auto}}
 
-/* v0.49.8 – echte Ganzseiten-Hintergründe je Setting */
+/* v0.49.9 – echte Ganzseiten-Hintergründe je Setting */
 body{
   --theme-bg:url('/theme-fantasy.jpg');
   --theme-shade:rgba(3,6,10,.48);
@@ -139,7 +139,7 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 @media(max-width:620px){body{background-attachment:fixed!important;background-position:center center!important;background-size:100vw 100vh!important}.genre-tab{padding:5px 8px!important;font-size:11px!important}}
 
 
-/* v0.49.8 – kompakte Setting-Reiter mit Motivbildern */
+/* v0.49.9 – kompakte Setting-Reiter mit Motivbildern */
 .genre-tabs{
   display:flex!important;
   gap:8px!important;
@@ -212,7 +212,7 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 <body><div class="wrap"><div class="app-shell">
 
 <div class="app-main">
-<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.49.8</div></header>
+<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.49.9</div></header>
 <div class="content">
 
 <div id="mainScreen">
@@ -496,7 +496,12 @@ function buildD6Mechanics(level,role,npc){
   return {levelText:`Erfahrungsstufe ${level}`,labels:["Widerstand","Wunden","Kompetenz","Initiative"],summary:[pipText(resist),"Wundstufen",["Anfänger","Erfahren","Profi","Elite","Meister"][tier],pipText(init)],stats:labs.map((x,i)=>({label:x,value:pipText(base[i]),extra:"Grundattribut"})),skills,combat:`<b>D6-Regelprofil:</b> OpenD6-basiert<br><br><b>Typischer Angriff / Hauptaktion:</b> ${pipText(attack)}<br><b>Schadenswiderstand:</b> ${pipText(resist)}<br><b>Wunden:</b> Betäubt → Verwundet → Schwer verwundet → Außer Gefecht<br><br><b>Besondere Fähigkeit:</b> ${special}<br><br><span style="color:#aaa">Werte werden als Würfel und Pips dargestellt: 2D → 2D+1 → 2D+2 → 3D. Die Erfahrungsstufe 1–20 ist eine NSC-Schmiede-Hilfe zur Einordnung der Kompetenz und kein OpenD6-Level.</span>`};
 }
 function d10Tier(level){return level<=4?0:level<=8?1:level<=12?2:level<=16?3:4;}
-function isD10Npc(n){return String(n?.system||"").toLowerCase()==="d10" || /(?:^| · )D10(?: · |$)/i.test(String(n?.meta||""));}
+function isD10Npc(n){
+  if(String(n?.system||"").toLowerCase()==="d10")return true;
+  if(/(?:^| · )D10(?: · |$)/i.test(String(n?.meta||"")))return true;
+  const st=Array.isArray(n?.stats)?n.stats.join(" "):String(n?.stats||"");
+  return /\b(?:Stärke|Geschicklichkeit|Widerstand|Charisma|Einfühlungsvermögen|Haltung|Wahrnehmung|Intelligenz|Willenskraft)\b.*\b\d+D10\b/i.test(st);
+}
 function buildD10Mechanics(level,role,npc){
   const tier=d10Tier(level);
   const labs=["Stärke","Geschicklichkeit","Widerstand","Charisma","Einfühlungsvermögen","Haltung","Wahrnehmung","Intelligenz","Willenskraft"];
@@ -853,13 +858,32 @@ async function loadNPC(id){
   if(!n){currentPortraitDriveFileId=null;n=getSavedNPCs().find(x=>String(x.id)===String(id)); if(n)image=await loadPortrait(n.id);}
   if(!n)return;
   currentNpcId=n.id;
-  if(isD10Npc(n))n.system="d6"; document.getElementById("system").value=(n.system==="d20"?"5e":(n.system||"5e")); document.getElementById("setting").value=inferSettingFromMeta(n); applySettingTheme(document.getElementById("setting").value);
+  if(isD10Npc(n))n.system="d6"; 
+  const __legacyD10=isD10Npc(n);
+  if(__legacyD10){
+    const oldMeta=String(n.meta||"");
+    const lm=oldMeta.match(/Erfahrungsstufe\s*(\d+)/i);
+    const lv=Math.max(1,Math.min(20,Number(n.sourceLevel)||Number(lm?.[1])||5));
+    const role=n.sourceRole||"Normaler NSC";
+    const job=oldMeta.split(" · ")[1]||"";
+    const pseudo={profession:job,job:job,appearance:n.appearance||"",personality:n.personality||"",skills:String(n.skills||"").split(/\n+/).map(x=>x.split(":")[0].trim()).filter(Boolean)};
+    const m=buildD6Mechanics(lv,role,pseudo);
+    n.system="d6";
+    n.meta=oldMeta.replace(/ · D10(?= · |$)/i," · OpenD6");
+    if(!/OpenD6/i.test(n.meta))n.meta=n.meta+" · OpenD6";
+    n.ac=String(m.summary[0]); n.hp=String(m.summary[1]); n.pb=String(m.summary[2]); n.init=String(m.summary[3]);
+    n.stats=m.stats.map(x=>`${x.label} ${x.value} ${x.extra||""}`.trim());
+    n.skills=m.skills.replace(/<br\s*\/?>/gi,"\n").replace(/<[^>]+>/g,"");
+    n.combat=m.combat.replace(/<br\s*\/?>/gi,"\n").replace(/<[^>]+>/g,"");
+    n.mechanicsVersion="opend6-v1";
+  }
+  document.getElementById("system").value=(n.system==="d20"?"5e":(n.system||"5e")); document.getElementById("setting").value=inferSettingFromMeta(n); applySettingTheme(document.getElementById("setting").value);
   document.getElementById("keywords").value=n.sourceKeywords||currentNpcFallbackKeywordsFromMeta(n.meta);
   if(n.sourceRole)document.getElementById("role").value=n.sourceRole;
   if(n.sourceGender)document.getElementById("gender").value=n.sourceGender;
   if(n.sourceLevel)document.getElementById("level").value=n.sourceLevel;
   document.getElementById("name").textContent=n.name; document.getElementById("meta").textContent=n.meta;
-  if(isD10Npc(n)){
+  if(false){
     const metaParts=String(n.meta||"").split(" · ");
     const levelMatch=String(n.meta||"").match(/Erfahrungsstufe\s*(\d+)/i);
     const d10Level=Math.max(1,Math.min(20,parseInt(n.sourceLevel)||parseInt(levelMatch?.[1])||5));
@@ -884,7 +908,7 @@ async function loadNPC(id){
   updateLevelLabel();
   document.getElementById("appearance").textContent=n.appearance||"";document.getElementById("clothing").textContent=n.clothing||"";document.getElementById("personality").textContent=n.personality||"";document.getElementById("motivation").textContent=n.motivation||"";
   document.getElementById("quirk").textContent=n.quirk||"";renderStoredIBF(n.ibf||"");document.getElementById("secret").textContent=n.secret||"";document.getElementById("skills").innerText=n.skills||"";
-  document.getElementById("speech").textContent=n.speech||"";if(isD10Npc(n)&&window.__lastD10Combat){document.getElementById("combat").innerHTML=window.__lastD10Combat;}else{document.getElementById("combat").innerText=n.combat||"";}document.getElementById("usedWhere").value=n.usedWhere||"";document.getElementById("knownNPCs").value=n.knownNPCs||"";document.getElementById("gmNotes").value=n.gmNotes||"";
+  document.getElementById("speech").textContent=n.speech||"";if(false){document.getElementById("combat").innerHTML=window.__lastD10Combat;}else{document.getElementById("combat").innerText=n.combat||"";}document.getElementById("usedWhere").value=n.usedWhere||"";document.getElementById("knownNPCs").value=n.knownNPCs||"";document.getElementById("gmNotes").value=n.gmNotes||"";
   if(image){currentPortraitData=image;document.getElementById("portraitBox").innerHTML=`<img src="${image}" alt="NSC Portrait">`;document.getElementById("playerImage").innerHTML=`<img src="${image}" alt="Spieleransicht">`;await savePortrait(n.id,image);}else resetPortrait();
   mirrorLocalNPC(n,image);
   document.getElementById("imageStatus").textContent=image?(currentPortraitDriveFileId?"✓ Portrait aus Google Drive geladen.":"✓ Portrait geladen."):"Für diesen NSC ist noch kein Portrait hinterlegt.";
@@ -935,7 +959,7 @@ align-items:center;justify-content:center;padding:0;cursor:pointer">
 
 </body></html>
 <style id="v0487-fixes">
-/* v0.49.8 – Seitenleiste entfernt, Bibliotheks-Reiter repariert */
+/* v0.49.9 – Seitenleiste entfernt, Bibliotheks-Reiter repariert */
 .app-shell{display:block!important;min-height:100vh!important}
 .app-main{width:100%!important;min-width:0!important}
 .side-nav,.side-art,.side-quote{display:none!important}
