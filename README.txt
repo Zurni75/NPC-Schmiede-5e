@@ -135,3 +135,13 @@ v0.49.8:
 - Setting/Welt/Epoche bleibt frei und unabhängig vom Regelsystem.
 - Alte gespeicherte D10-NSC werden beim Öffnen auf OpenD6-Regelwerte migriert.
 - Narrative Inhalte, Themes und übrige App-Struktur bleiben erhalten.
+
+
+v0.50.0:
+- Sichtbare Bezeichnung des D6-Regelsystems überall auf OpenD6 vereinheitlicht.
+- Interner Schlüssel d6 bleibt aus Kompatibilitätsgründen bestehen.
+- Alte gespeicherte D6-NSC werden sichtbar als OpenD6 dargestellt.
+- World-of-Darkness-Theme entfernt.
+- Horror-Theme bleibt erhalten.
+- Western-Theme bleibt als eigenes Theme erhalten.
+- Regelsystem-Auswahl bleibt auf 5e und OpenD6 beschränkt.
