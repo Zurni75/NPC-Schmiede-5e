@@ -171,3 +171,10 @@ v0.50.3:
 - OpenD6-Attributanzeige akzeptiert neue und alte Speicherformate und schreibt Attributnamen vollständig aus.
 - OpenD6-Rollenlogik aus v0.50.2 bleibt erhalten.
 - Portrait-/Google-Drive-Fix aus v0.50.2 bleibt erhalten.
+
+
+v0.50.4:
+- Kritischen Fehler aus v0.50.3 behoben: Die gespeicherte NSC-Liste brach beim Rendern wegen einer nicht existierenden Variable ab.
+- Cloud-/lokale NSC werden nun erst in einer sicheren Anzeigekopie von "World of Darkness" auf "Horror" normalisiert.
+- Keine Änderung oder Löschung der gespeicherten Originaldatensätze beim bloßen Anzeigen.
+- Portrait-, OpenD6- und Rollenlogik aus v0.50.2/v0.50.3 bleiben erhalten.
