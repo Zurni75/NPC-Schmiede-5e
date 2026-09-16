@@ -178,3 +178,11 @@ v0.50.4:
 - Cloud-/lokale NSC werden nun erst in einer sicheren Anzeigekopie von "World of Darkness" auf "Horror" normalisiert.
 - Keine Änderung oder Löschung der gespeicherten Originaldatensätze beim bloßen Anzeigen.
 - Portrait-, OpenD6- und Rollenlogik aus v0.50.2/v0.50.3 bleiben erhalten.
+
+
+v0.50.5:
+- Bibliotheksdarstellung auf den stabilen Renderweg zurückgesetzt.
+- Keine Mutation/Kopie der Cloud-NSC mehr beim Aufbau der gespeicherten Liste.
+- World of Darkness wird ausschließlich bei der Genre-Ermittlung als Horror angezeigt.
+- Horror wird direkt dem Horror-Hintergrund zugeordnet.
+- Die 8 synchronisierten NSC werden unabhängig von der Genre-Migration wieder gerendert.
