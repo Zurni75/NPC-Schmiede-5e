@@ -162,3 +162,12 @@ v0.50.2:
 - Portrait-Miniaturen greifen bei Cloud-NSC die vollständige Cloud-Aufzeichnung ab, um die Google-Drive-Datei-ID zuverlässig zu finden.
 - Thumbnail-Laden verändert keine Portrait-Zuordnung und keinen Drive-Status.
 - Beim Öffnen wird bei fehlgeschlagenem Drive-Laden zusätzlich das lokale Portrait versucht.
+
+
+v0.50.3:
+- Alte Setting-Zuordnung "World of Darkness" wird in der App automatisch als "Horror" behandelt.
+- Beim erneuten Speichern eines solchen NSC wird "Horror" dauerhaft gespeichert.
+- Kein eigener World-of-Darkness-Theme-Pfad mehr; Horror übernimmt diese Altbestände.
+- OpenD6-Attributanzeige akzeptiert neue und alte Speicherformate und schreibt Attributnamen vollständig aus.
+- OpenD6-Rollenlogik aus v0.50.2 bleibt erhalten.
+- Portrait-/Google-Drive-Fix aus v0.50.2 bleibt erhalten.
