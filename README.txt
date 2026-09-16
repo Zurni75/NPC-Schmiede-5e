@@ -186,3 +186,10 @@ v0.50.5:
 - World of Darkness wird ausschließlich bei der Genre-Ermittlung als Horror angezeigt.
 - Horror wird direkt dem Horror-Hintergrund zugeordnet.
 - Die 8 synchronisierten NSC werden unabhängig von der Genre-Migration wieder gerendert.
+
+v0.50.6:
+- Bibliothek führt Cloud-Index und lokale Sicherung zusammen; lokal vorhandene NSC verschwinden nicht mehr aus der Liste.
+- Öffnen/Bearbeiten nutzt Cloud-Datensatz mit lokalem Fallback.
+- Fehler in der D10-Alt-Erkennung beim Öffnen korrigiert.
+- Neuer nicht-destruktiver Rettungsbutton lädt nur lokal vorhandene, in der Cloud fehlende NSC erneut hoch.
+- Portrait-Fallback bleibt lokal aktiv; Drive wird ergänzend versucht.
