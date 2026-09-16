@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NSC-Schmiede v0.50.1</title>
+<title>NSC-Schmiede v0.50.2</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -103,7 +103,7 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
 .genre-tab .count{opacity:.75;font-size:.88em;margin-left:4px}
 @media(max-width:620px){.genre-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:9px}.genre-tab{white-space:nowrap;flex:0 0 auto}}
 
-/* v0.50.1 – echte Ganzseiten-Hintergründe je Setting */
+/* v0.50.2 – echte Ganzseiten-Hintergründe je Setting */
 body{
   --theme-bg:url('/theme-fantasy.jpg');
   --theme-shade:rgba(3,6,10,.48);
@@ -139,7 +139,7 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 @media(max-width:620px){body{background-attachment:fixed!important;background-position:center center!important;background-size:100vw 100vh!important}.genre-tab{padding:5px 8px!important;font-size:11px!important}}
 
 
-/* v0.50.1 – kompakte Setting-Reiter mit Motivbildern */
+/* v0.50.2 – kompakte Setting-Reiter mit Motivbildern */
 .genre-tabs{
   display:flex!important;
   gap:8px!important;
@@ -206,7 +206,7 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 }
 
 
-/* v0.50.1 – Portrait-Miniaturen in Gespeicherte NSC */
+/* v0.50.2 – Portrait-Miniaturen in Gespeicherte NSC */
 .npcrow-main{display:grid;grid-template-columns:58px minmax(0,1fr);gap:12px;align-items:center;min-width:0}
 .npc-thumb{width:58px;height:58px;border-radius:50%;overflow:hidden;border:1px solid #8a6a35;background:linear-gradient(180deg,#1c2530,#0b1016);box-shadow:0 2px 10px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;color:#d7a84b;font-family:Georgia,serif;font-size:24px;font-weight:700;flex:none}
 .npc-thumb img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;display:block}
@@ -220,7 +220,7 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 <body><div class="wrap"><div class="app-shell">
 
 <div class="app-main">
-<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.50.1</div></header>
+<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.50.2</div></header>
 <div class="content">
 
 <div id="mainScreen">
@@ -371,7 +371,7 @@ async function generateNPC(){
     });
     const npc=await res.json();
     if(!res.ok) throw new Error(npc.error||'KI-Generierung fehlgeschlagen');
-    const mech=buildMechanics(system,level,role,npc,setting);
+    npc.sourceKeywords=keywords; const mech=buildMechanics(system,level,role,npc,setting);
 
     document.getElementById("name").textContent=npc.name;
     document.getElementById("meta").textContent=`${npc.race} · ${npc.profession} · ${mech.levelText} · ${npc.age} Jahre · ${npc.gender} · ${systemLabel(system)} · ${setting}`;
@@ -404,7 +404,7 @@ async function generateNPC(){
   }catch(err){status.textContent="Fehler bei der KI-Generierung: "+err.message;}
   finally{if(button)button.disabled=false;}
 }
-function systemLabel(s){return ({"5e":"5e","d10":"D10","d6":"D6"})[s]||"5e";}
+function systemLabel(s){return ({"5e":"5e","d6":"OpenD6"})[s]||"5e";}
 function updateLevelLabel(){
   const s=document.getElementById("system")?.value||"5e";
   const l=document.getElementById("levelLabel");
@@ -488,20 +488,66 @@ function pipText(pips){
 }
 function d6Tier(level){return level<=4?0:level<=8?1:level<=12?2:level<=16?3:4;}
 function buildD6Mechanics(level,role,npc){
-  const tier=d6Tier(level), important=role!=="Normaler NSC"?1:0;
-  const labs=["GES","WIS","WAH","STÄ","TEC","MEC"];
-  let base=[7,7,7,7,6,6];
-  for(let i=0;i<tier;i++)base[(i*2+Math.floor(Math.random()*base.length))%base.length]++;
-  base=base.sort(()=>Math.random()-.5);
-  if(role==="Gegner")base[0]++;
-  const skillNames=(npc.skills||[]).slice(0,4);
-  const skillVals=skillNames.map((skill,i)=>Math.min(22,base[i%6]+2+tier+important+(i===0?1:0)));
-  const skills=skillNames.map((skill,i)=>`${skill}: <b>${pipText(skillVals[i])}</b>`).join("<br>");
-  const attack=Math.max(...skillVals.slice(0,2));
-  const resist=base[3]+(role==="Gegner"?2:0);
-  const init=base[2]+tier;
-  const special=role==="Gegner"?"Einmal pro Szene darf der NSC einen passenden Fertigkeitswurf um +1D erhöhen.":"Einmal pro Szene darf der NSC eine passende Berufs- oder Kontaktprobe um +1D erhöhen.";
-  return {levelText:`Erfahrungsstufe ${level}`,labels:["Widerstand","Wunden","Kompetenz","Initiative"],summary:[pipText(resist),"Wundstufen",["Anfänger","Erfahren","Profi","Elite","Meister"][tier],pipText(init)],stats:labs.map((x,i)=>({label:x,value:pipText(base[i]),extra:"Grundattribut"})),skills,combat:`<b>D6-Regelprofil:</b> OpenD6-basiert<br><br><b>Typischer Angriff / Hauptaktion:</b> ${pipText(attack)}<br><b>Schadenswiderstand:</b> ${pipText(resist)}<br><b>Wunden:</b> Betäubt → Verwundet → Schwer verwundet → Außer Gefecht<br><br><b>Besondere Fähigkeit:</b> ${special}<br><br><span style="color:#aaa">Werte werden als Würfel und Pips dargestellt: 2D → 2D+1 → 2D+2 → 3D. Die Erfahrungsstufe 1–20 ist eine NSC-Schmiede-Hilfe zur Einordnung der Kompetenz und kein OpenD6-Level.</span>`};
+  const tier=d6Tier(level);
+  const text=((npc?.profession||"")+" "+(npc?.job||"")+" "+(npc?.appearance||"")+" "+(npc?.personality||"")+" "+(npc?.race||"")+" "+(npc?.sourceKeywords||"")).toLowerCase();
+  const labels=["Stärke","Geschicklichkeit","Widerstand","Intelligenz","Willenskraft","Wahrnehmung"];
+  let v=[7,7,7,7,7,7]; // 2D+1 baseline
+  const bump=(ix,n=1)=>{for(let k=0;k<n;k++)v[ix]=Math.min(16,v[ix]+1);};
+
+  // Experience improves the whole profile gently, role/expertise does the rest.
+  for(let i=0;i<tier;i++){bump((i+1)%6);bump((i+4)%6);}
+  if(role==="Wichtiger NSC"){bump(3);bump(4);}
+  if(role==="Gegner"){bump(0);bump(2);}
+
+  const bruiser=/schläger|schlaeger|bodyguard|türsteher|tuersteher|soldat|söldner|soeldner|krieger|kämpfer|kaempfer|boxer|ringer|gangster|mafia|vollstrecker|wache|gardist/.test(text);
+  const agile=/dieb|schurke|einbrecher|akrobat|schütze|schuetze|jäger|jaeger|spion|assass|kundschafter/.test(text);
+  const scholar=/gelehrt|bibliothekar|wissenschaft|forscher|arzt|ärzt|aerzt|ingenieur|techniker|hacker|analyst|magier/.test(text);
+  const social=/diplomat|händler|haendler|wirt|polit|künstler|kuenstler|berater|anwalt|verkäufer|verkaeufer/.test(text);
+  const investigator=/detektiv|ermittler|poliz|inspektor|journalist|spür|spuer/.test(text);
+
+  if(bruiser){bump(0,4);bump(2,3);bump(4,1);}
+  if(agile){bump(1,4);bump(5,2);}
+  if(scholar){bump(3,4);bump(5,1);}
+  if(social){bump(4,3);bump(3,1);}
+  if(investigator){bump(5,4);bump(3,2);}
+
+  const rawSkills=(npc?.skills||[]).map(x=>String(x).replace(/<[^>]+>/g,"").split(":")[0].trim()).filter(Boolean);
+  let defaults=bruiser?["Nahkampf","Einschüchtern","Athletik","Straßenwissen"]:
+               agile?["Heimlichkeit","Akrobatik","Wahrnehmung","Fernkampf"]:
+               investigator?["Ermitteln","Wahrnehmung","Straßenwissen","Überreden"]:
+               scholar?["Berufswissen","Recherche","Wahrnehmung","Technik"]:
+               social?["Überreden","Menschenkenntnis","Etikette","Wahrnehmung"]:
+               ["Beruf","Wahrnehmung","Athletik","Überreden"];
+  const names=[...rawSkills,...defaults].filter((x,i,a)=>x&&a.indexOf(x)===i).slice(0,6);
+  const attrFor=(name)=>{
+    const x=String(name).toLowerCase();
+    if(/nahkampf|athlet|ringen|kraft/.test(x))return 0;
+    if(/heimlich|akrobat|fernkampf|schieß|schiess|fahren|finger/.test(x))return 1;
+    if(/ausdauer|zäh|zaeh|überleben|ueberleben/.test(x))return 2;
+    if(/wissen|recherche|technik|medizin|beruf|ermittel/.test(x))return 3;
+    if(/einschüchter|einschuechter|überred|ueberred|menschenkennt|etikette|führung|fuehrung/.test(x))return 4;
+    return 5;
+  };
+  const skillVals=names.map((name,i)=>{
+    let val=v[attrFor(name)]+2+tier+(i<2?1:0);
+    if(bruiser&&/nahkampf|einschüchter|einschuechter|athlet/.test(name.toLowerCase()))val+=2;
+    if(investigator&&/ermittel|wahrnehm|straßen|strassen/.test(name.toLowerCase()))val+=2;
+    return Math.min(18,val);
+  });
+  const skills=names.map((name,i)=>`${name}: <b>${pipText(skillVals[i])}</b>`).join("<br>");
+  const attack=Math.max(...skillVals.filter((_,i)=>/kampf|schieß|schiess|waffe|ringen/.test(names[i].toLowerCase())), v[0]+2);
+  const resist=v[2]+(bruiser?1:0);
+  const init=v[5]+tier;
+  const competence=["Anfänger","Erfahren","Profi","Elite","Meister"][tier];
+  const special=bruiser?"Robust: Bei passenden körperlichen Widerstandsproben darf der NSC einmal pro Szene +1D einsetzen.":"Berufsroutine: Einmal pro Szene darf der NSC eine passende Berufsprobe um +1D erhöhen.";
+  return {
+    levelText:`Erfahrungsstufe ${level}`,
+    labels:["Widerstand","Wunden","Kompetenz","Initiative"],
+    summary:[pipText(resist),"Wundstufen",competence,pipText(init)],
+    stats:labels.map((x,i)=>({label:x,value:pipText(v[i]),extra:""})),
+    skills,
+    combat:`<b>OpenD6-Regelprofil</b><br><br><b>Typischer Angriff / Hauptaktion:</b> ${pipText(attack)}<br><b>Schadenswiderstand:</b> ${pipText(resist)}<br><b>Initiative:</b> ${pipText(init)}<br><b>Wunden:</b> Betäubt → Verwundet → Schwer verwundet → Außer Gefecht<br><br><b>Besondere Fähigkeit:</b> ${special}<br><br><span style="color:#aaa">Die Erfahrungsstufe ist eine Hilfe der NSC-Schmiede. Beruf und Rolle gewichten Attribute und Fertigkeiten; Werte werden als OpenD6-Würfel und Pips dargestellt.</span>`
+  };
 }
 function d10Tier(level){return level<=4?0:level<=8?1:level<=12?2:level<=16?3:4;}
 function isD10Npc(n){
@@ -852,10 +898,15 @@ async function hydrateLibraryThumbs(list){
     const id=String(n?.id||""); if(!id||libraryThumbCache.has(id))return;
     let image=null;
     try{
-      // Local portrait storage is fastest and also works offline.
       image=await loadPortrait(n.id);
-      // If only a Drive portrait exists, use it when connected.
-      if(!image && n.portraitDriveFileId && googleAccessToken)image=await loadPortraitFromDrive(n.portraitDriveFileId);
+      if(!image && cloudReady){
+        const rec=await cloudFetch('/api/sync-npcs?id='+encodeURIComponent(id));
+        const fid=rec?.portraitDriveFileId||null;
+        if(fid){
+          try{image=await loadPortraitFromDrive(fid);}catch(e){}
+        }
+        if(!image)image=rec?.portrait||null;
+      }
     }catch(e){}
     if(!image)return;
     libraryThumbCache.set(id,image);
@@ -891,7 +942,7 @@ async function loadNPC(id){
   let n=null,image=null;
   try{
     if(!cloudReady)await connectCloud(false);
-    if(cloudReady){const rec=await cloudFetch('/api/sync-npcs?id='+encodeURIComponent(id));n=rec.npc;currentPortraitDriveFileId=rec.portraitDriveFileId||null;if(currentPortraitDriveFileId){try{image=await loadPortraitFromDrive(currentPortraitDriveFileId);}catch(e){document.getElementById('imageStatus').textContent='⚠ '+e.message;}}if(!image)image=rec.portrait||null;}
+    if(cloudReady){const rec=await cloudFetch('/api/sync-npcs?id='+encodeURIComponent(id));n=rec.npc;currentPortraitDriveFileId=rec.portraitDriveFileId||null;if(currentPortraitDriveFileId){try{image=await loadPortraitFromDrive(currentPortraitDriveFileId);}catch(e){document.getElementById('imageStatus').textContent='⚠ '+e.message;}}if(!image)image=rec.portrait||null; if(!image)image=await loadPortrait(id);}
   }catch(e){console.warn(e);}
   if(!n){currentPortraitDriveFileId=null;n=getSavedNPCs().find(x=>String(x.id)===String(id)); if(n)image=await loadPortrait(n.id);}
   if(!n)return;
@@ -920,7 +971,19 @@ async function loadNPC(id){
   if(n.sourceRole)document.getElementById("role").value=n.sourceRole;
   if(n.sourceGender)document.getElementById("gender").value=n.sourceGender;
   if(n.sourceLevel)document.getElementById("level").value=n.sourceLevel;
-  document.getElementById("name").textContent=n.name; document.getElementById("meta").textContent=n.meta;
+  document.getElementById("name").textContent=n.name; n.meta=String(n.meta||"").replace(/ · D6(?= · |$)/g," · OpenD6"); document.getElementById("meta").textContent=n.meta;
+  if(n.system==="d6"){
+    const mm=String(n.meta||"").split(" · ");
+    const lv=Math.max(1,Math.min(20,Number(n.sourceLevel)||Number((String(n.meta||"").match(/Erfahrungsstufe\s*(\d+)/i)||[])[1])||5));
+    const pseudo={profession:mm[1]||"",job:mm[1]||"",appearance:n.appearance||"",personality:n.personality||"",race:mm[0]||"",sourceKeywords:n.sourceKeywords||"" ,skills:String(n.skills||"").split(/\n+/).map(x=>x.split(":")[0].trim()).filter(Boolean)};
+    const dm=buildD6Mechanics(lv,n.sourceRole||"Normaler NSC",pseudo);
+    n.ac=String(dm.summary[0]);n.hp=String(dm.summary[1]);n.pb=String(dm.summary[2]);n.init=String(dm.summary[3]);
+    n.stats=dm.stats.map(x=>`${x.label}|||${x.value}|||${x.extra||""}`);
+    n.skills=dm.skills.replace(/<br\s*\/?>/gi,"\n").replace(/<[^>]+>/g,"");
+    n.combat=dm.combat.replace(/<br\s*\/?>/gi,"\n").replace(/<[^>]+>/g,"");
+    n.mechanicsVersion="opend6-v2";
+  }
+
   if(false){
     const metaParts=String(n.meta||"").split(" · ");
     const levelMatch=String(n.meta||"").match(/Erfahrungsstufe\s*(\d+)/i);
@@ -997,7 +1060,7 @@ align-items:center;justify-content:center;padding:0;cursor:pointer">
 
 </body></html>
 <style id="v0487-fixes">
-/* v0.50.1 – Seitenleiste entfernt, Bibliotheks-Reiter repariert */
+/* v0.50.2 – Seitenleiste entfernt, Bibliotheks-Reiter repariert */
 .app-shell{display:block!important;min-height:100vh!important}
 .app-main{width:100%!important;min-width:0!important}
 .side-nav,.side-art,.side-quote{display:none!important}

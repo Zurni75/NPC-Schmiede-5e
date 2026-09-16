@@ -152,3 +152,13 @@ v0.50.1:
 - Die Miniatur nutzt einen engen, nach oben versetzten Ausschnitt, damit vor allem das Gesicht sichtbar ist.
 - Ohne vorhandenes Portrait wird dezent der Anfangsbuchstabe des Namens angezeigt.
 - Portrait-Miniaturen werden nachgeladen und gecacht, damit die Liste schnell aufgebaut wird.
+
+
+v0.50.2:
+- OpenD6-Attribute vollständig ausgeschrieben.
+- Beruf/Rolle gewichten OpenD6-Werte und Fertigkeiten; körperliche Rollen wie Schläger erhalten deutlich passende Stärke-, Widerstands- und Nahkampfwerte.
+- Alte OpenD6-NSC werden beim Öffnen mit der neuen Rollenlogik neu berechnet.
+- OpenD6 wird sichtbar konsequent als OpenD6 bezeichnet.
+- Portrait-Miniaturen greifen bei Cloud-NSC die vollständige Cloud-Aufzeichnung ab, um die Google-Drive-Datei-ID zuverlässig zu finden.
+- Thumbnail-Laden verändert keine Portrait-Zuordnung und keinen Drive-Status.
+- Beim Öffnen wird bei fehlgeschlagenem Drive-Laden zusätzlich das lokale Portrait versucht.
