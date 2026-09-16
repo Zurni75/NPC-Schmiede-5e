@@ -9,7 +9,7 @@
 <link rel="manifest" href="/manifest.webmanifest">
 <link rel="icon" href="/icon-192.png">
 <link rel="apple-touch-icon" href="/icon-192.png">
-<title>NSC-Schmiede v0.50.6</title>
+<title>NSC-Schmiede v0.50.7</title>
 <style>
 :root{--bg:#0e1116;--panel:#181d25;--panel2:#222a35;--text:#f3efe7;--muted:#aaa69e;--accent:#d1a54a;--line:#343d4b;--good:#9bd39b}
 *{box-sizing:border-box}body{margin:0;padding:22px;background:linear-gradient(150deg,#0b0e12,#151a22 55%,#0f1217);color:var(--text);font-family:system-ui,Segoe UI,sans-serif;min-height:100vh}
@@ -103,7 +103,7 @@ header h1{font-size:46px!important}.subtitle{font-size:16px!important}
 .genre-tab .count{opacity:.75;font-size:.88em;margin-left:4px}
 @media(max-width:620px){.genre-tabs{flex-wrap:nowrap;overflow-x:auto;padding-bottom:9px}.genre-tab{white-space:nowrap;flex:0 0 auto}}
 
-/* v0.50.6 – echte Ganzseiten-Hintergründe je Setting */
+/* v0.50.7 – echte Ganzseiten-Hintergründe je Setting */
 body{
   --theme-bg:url('/theme-fantasy.jpg');
   --theme-shade:rgba(3,6,10,.48);
@@ -139,7 +139,7 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 @media(max-width:620px){body{background-attachment:fixed!important;background-position:center center!important;background-size:100vw 100vh!important}.genre-tab{padding:5px 8px!important;font-size:11px!important}}
 
 
-/* v0.50.6 – kompakte Setting-Reiter mit Motivbildern */
+/* v0.50.7 – kompakte Setting-Reiter mit Motivbildern */
 .genre-tabs{
   display:flex!important;
   gap:8px!important;
@@ -206,7 +206,7 @@ body.theme-neutral{--theme-bg:url('/theme-neutral.jpg');--theme-shade:rgba(5,5,5
 }
 
 
-/* v0.50.6 – Portrait-Miniaturen in Gespeicherte NSC */
+/* v0.50.7 – Portrait-Miniaturen in Gespeicherte NSC */
 .npcrow-main{display:grid;grid-template-columns:58px minmax(0,1fr);gap:12px;align-items:center;min-width:0}
 .npc-thumb{width:58px;height:58px;border-radius:50%;overflow:hidden;border:1px solid #8a6a35;background:linear-gradient(180deg,#1c2530,#0b1016);box-shadow:0 2px 10px rgba(0,0,0,.28);display:flex;align-items:center;justify-content:center;color:#d7a84b;font-family:Georgia,serif;font-size:24px;font-weight:700;flex:none}
 .npc-thumb img{width:100%;height:100%;object-fit:cover;object-position:50% 18%;display:block}
@@ -254,7 +254,7 @@ function migrateLegacyNpcSetting(n){
 <body><div class="wrap"><div class="app-shell">
 
 <div class="app-main">
-<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.50.6</div></header>
+<header><div><h1>NSC-SCHMIEDE</h1><div class="subtitle">Lebendige Charaktere für Deine Geschichte</div></div><div class="badge">v0.50.7</div></header>
 <div class="content">
 
 <div id="mainScreen">
@@ -305,7 +305,7 @@ function migrateLegacyNpcSetting(n){
 
 <div id="libraryScreen" style="display:none">
   <div class="card library-card">
-    <div class="library-head"><div><h2 style="margin:0">▤ Gespeicherte NSC</h2><div class="note">Deine private Sammlung. Bei aktiver Cloud- und Google-Drive-Verbindung erscheinen hier auf Tablet und PC dieselben NSC samt Portraits.</div></div><div class="npcactions"><button class="secondary" onclick="forceLocalMigration()">⬆ Lokale NSC übernehmen</button><button class="secondary" onclick="recoverMissingLocalNPCs()">↻ Fehlende NSC retten</button><button class="secondary" onclick="changeSyncSecret()">☁ Verbindung</button><button class="secondary" onclick="showMainScreen()">← Zurück</button></div></div>
+    <div class="library-head"><div><h2 style="margin:0">▤ Gespeicherte NSC</h2><div class="note">Deine private Sammlung. Bei aktiver Cloud- und Google-Drive-Verbindung erscheinen hier auf Tablet und PC dieselben NSC samt Portraits.</div></div><div class="npcactions"><button class="secondary" onclick="forceLocalMigration()">⬆ Lokale NSC übernehmen</button><button class="secondary" onclick="recoverMissingLocalNPCs()">↻ Lokale Sicherung prüfen</button><button class="secondary" onclick="changeSyncSecret()">☁ Verbindung</button><button class="secondary" onclick="showMainScreen()">← Zurück</button></div></div>
     <div id="librarySyncStatus" class="note" style="margin-bottom:10px"></div>
     <div id="genreTabs" class="genre-tabs" aria-label="NSC nach Setting gruppieren"></div>
     <div class="searchbox"><input id="npcSearch" placeholder="Im gewählten Setting suchen: Name, Ort, Beruf, Volk, Notiz ..." oninput="renderSavedNPCs()"><button class="secondary" onclick="renderSavedNPCs()">🔎 Suchen</button></div>
@@ -877,34 +877,70 @@ function collectCurrentNPC(){
     knownNPCs:document.getElementById("knownNPCs").value,gmNotes:document.getElementById("gmNotes").value,mechanicsVersion:(document.getElementById("system").value==="d10"?"d10-v2":"")
   };
 }
-function mirrorLocalNPC(npc,portrait){
+async function mirrorLocalNPC(npc,portrait){
   const list=getSavedNPCs(); const idx=list.findIndex(x=>String(x.id)===String(npc.id));
-  if(idx>=0)list[idx]=npc;else list.unshift(npc); setLocalSavedNPCs(list);
-  if(portrait)savePortrait(npc.id,portrait);
+  if(idx>=0)list[idx]=npc;else list.unshift(npc);
+  setLocalSavedNPCs(list);
+  if(portrait)await savePortrait(npc.id,portrait);
+  const verify=getSavedNPCs().some(x=>String(x.id)===String(npc.id));
+  if(!verify)throw new Error("Lokale Sicherung konnte nicht bestätigt werden.");
+  return true;
 }
 async function saveNPC(){
   const npc=collectCurrentNPC(); currentNpcId=npc.id;
-  const existed=(cloudReady?cloudNpcIndex:getSavedNPCs()).some(x=>String(x.id)===String(npc.id));
-  document.getElementById("saved").style.display="none";
+  const existed=[...(cloudNpcIndex||[]),...getSavedNPCs()].some(x=>String(x.id)===String(npc.id));
+  const savedEl=document.getElementById("saved");
+  savedEl.style.display="none";
   try{
-    if(!cloudReady)await connectCloud(true);
-    if(!cloudReady)throw new Error("Keine Cloud-Verbindung.");
-    let driveFileId=currentPortraitDriveFileId;
-    if(currentPortraitData){
-      const prepared=await preparePortraitForCloud(currentPortraitData); currentPortraitData=prepared;
-      if(!googleAccessToken)await connectGoogleDrive();
-      if(googleAccessToken)driveFileId=await uploadPortraitToDrive(prepared,npc,driveFileId);
+    // First make a durable local backup. Cloud/Drive can fail without losing the NPC.
+    await await mirrorLocalNPC(npc,currentPortraitData);
+
+    let cloudOk=false, driveOk=!currentPortraitData, driveFileId=currentPortraitDriveFileId;
+    if(!cloudReady)await connectCloud(false);
+    if(cloudReady){
+      if(currentPortraitData){
+        const prepared=await preparePortraitForCloud(currentPortraitData);
+        currentPortraitData=prepared;
+        await savePortrait(npc.id,prepared);
+        if(!googleAccessToken){
+          try{await connectGoogleDrive();}catch(e){}
+        }
+        if(googleAccessToken){
+          try{
+            driveFileId=await uploadPortraitToDrive(prepared,npc,driveFileId);
+            driveOk=Boolean(driveFileId);
+          }catch(e){
+            console.warn("Drive-Portrait nicht gespeichert",e);
+            driveOk=false;
+          }
+        }
+      }
+      currentPortraitDriveFileId=driveFileId||null;
+      await cloudFetch('/api/sync-npcs',{
+        method:'POST',
+        headers:{'Content-Type':'application/json'},
+        body:JSON.stringify({npc,portraitDriveFileId:currentPortraitDriveFileId,clearLegacyPortrait:Boolean(currentPortraitDriveFileId)})
+      });
+      await connectCloud(false);
+      cloudOk=(cloudNpcIndex||[]).some(x=>String(x.id)===String(npc.id));
+      if(!cloudOk)throw new Error("Cloud-Speicherung konnte nach dem Schreiben nicht bestätigt werden.");
     }
-    currentPortraitDriveFileId=driveFileId||null;
-    await cloudFetch('/api/sync-npcs',{method:'POST',headers:{'Content-Type':'application/json'},body:JSON.stringify({npc,portraitDriveFileId:currentPortraitDriveFileId,clearLegacyPortrait:Boolean(currentPortraitDriveFileId)})});
-    mirrorLocalNPC(npc,currentPortraitData);
-    await connectCloud(false);
-    document.getElementById("saved").textContent=existed?"✓ Änderungen gespeichert und synchronisiert.":"✓ NSC gespeichert und synchronisiert.";
+
+    if(cloudOk && driveOk){
+      savedEl.textContent=existed?"✓ Änderungen lokal, in der Cloud und mit Portrait gesichert.":"✓ NSC lokal, in der Cloud und mit Portrait gesichert.";
+    }else if(cloudOk){
+      savedEl.textContent="✓ NSC lokal und in der Cloud gesichert. ⚠ Portrait ist nur lokal gesichert.";
+    }else{
+      savedEl.textContent="✓ NSC lokal gesichert. ⚠ Cloud ist derzeit nicht verbunden.";
+    }
   }catch(e){
-    mirrorLocalNPC(npc,currentPortraitData);
-    document.getElementById("saved").textContent="⚠ Cloud nicht erreichbar – lokal gesichert. "+e.message;
+    try{await await mirrorLocalNPC(npc,currentPortraitData);}catch(localErr){
+      savedEl.textContent="❌ Speichern fehlgeschlagen: "+localErr.message;
+      savedEl.style.display="block"; return;
+    }
+    savedEl.textContent="⚠ NSC lokal gesichert; Cloud/Drive nicht vollständig bestätigt. "+e.message;
   }
-  document.getElementById("saved").style.display="block";
+  savedEl.style.display="block";
   document.getElementById("saveNpcButton").textContent="💾 Änderungen speichern";
   renderSavedNPCs(); updateSavedCount();
 }
@@ -1121,7 +1157,7 @@ align-items:center;justify-content:center;padding:0;cursor:pointer">
 
 </body></html>
 <style id="v0487-fixes">
-/* v0.50.6 – Seitenleiste entfernt, Bibliotheks-Reiter repariert */
+/* v0.50.7 – Seitenleiste entfernt, Bibliotheks-Reiter repariert */
 .app-shell{display:block!important;min-height:100vh!important}
 .app-main{width:100%!important;min-width:0!important}
 .side-nav,.side-art,.side-quote{display:none!important}

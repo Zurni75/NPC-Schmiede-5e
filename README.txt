@@ -193,3 +193,11 @@ v0.50.6:
 - Fehler in der D10-Alt-Erkennung beim Öffnen korrigiert.
 - Neuer nicht-destruktiver Rettungsbutton lädt nur lokal vorhandene, in der Cloud fehlende NSC erneut hoch.
 - Portrait-Fallback bleibt lokal aktiv; Drive wird ergänzend versucht.
+
+v0.50.7:
+- Speicherreihenfolge stabilisiert: Jeder NSC wird zuerst lokal gesichert, erst danach folgen Google Drive und Cloud.
+- Lokale Sicherung wird nach dem Schreiben verifiziert.
+- Portrait wird lokal mit await gespeichert, bevor die Cloud-Synchronisierung als erfolgreich gemeldet wird.
+- Cloud-Speicherung wird nach POST durch erneutes Laden des Cloud-Index und Prüfung der NSC-ID bestätigt.
+- Drive-Ausfall löscht keinen NSC und kein lokales Portrait mehr; die App meldet den Teilstatus verständlich.
+- Bibliothek bleibt Cloud+lokal zusammengeführt.
