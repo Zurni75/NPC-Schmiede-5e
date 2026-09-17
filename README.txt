@@ -201,3 +201,11 @@ v0.50.7:
 - Cloud-Speicherung wird nach POST durch erneutes Laden des Cloud-Index und Prüfung der NSC-ID bestätigt.
 - Drive-Ausfall löscht keinen NSC und kein lokales Portrait mehr; die App meldet den Teilstatus verständlich.
 - Bibliothek bleibt Cloud+lokal zusammengeführt.
+
+v0.50.8:
+- Portrait-Erzeugung zeigt jetzt die verstrichene Zeit in Sekunden.
+- Portrait-Button wird während der Erzeugung deaktiviert, damit kein versehentlicher Doppelaufruf entsteht.
+- Browser bricht einen hängenden Portrait-Aufruf nach 120 Sekunden sauber ab.
+- Server bricht einen hängenden OpenAI-Bildaufruf nach 110 Sekunden mit verständlicher Fehlermeldung ab.
+- Erfolgreich erzeugte Portraits werden sofort zusätzlich lokal zwischengesichert.
+- Keine Änderungen an Bibliothek, Themes, OpenD6-Logik oder Cloud-Speicherstruktur.
