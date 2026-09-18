@@ -201,9 +201,3 @@ v0.50.7:
 - Cloud-Speicherung wird nach POST durch erneutes Laden des Cloud-Index und Prüfung der NSC-ID bestätigt.
 - Drive-Ausfall löscht keinen NSC und kein lokales Portrait mehr; die App meldet den Teilstatus verständlich.
 - Bibliothek bleibt Cloud+lokal zusammengeführt.
-
-v0.50.9:
-- Moderne v0.50.7 als Basis.
-- Ausschließlich die Portrait-Erzeugung (Browserfunktion + API-Endpunkt) wurde 1:1 aus der nachweislich schnellen v0.46.1 übernommen.
-- Keine Änderungen an Bibliothek, OpenD6, Themes, Cloud-/Drive-Speicherung oder sonstiger Oberfläche.
-- Diese Version dient zuerst dem Geschwindigkeitstest der Portrait-Erzeugung.
